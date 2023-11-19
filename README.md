@@ -6,7 +6,7 @@ This is a set of things that i made for myself that simplify the use of the Deco
 
 # How to use this?
 
-Add ```kotlin maven { url = uri("https://jitpack.io") }``` to ```kotlin dependencyResolutionManagement { repositories { ... } } ``` in settings.gradle.kts, then just just add the necessary artifacts. Check the sample app to see examples.
+Add ```maven { url = uri("https://jitpack.io") }``` to ```dependencyResolutionManagement { repositories { ... } }``` in settings.gradle.kts, then just just add the necessary artifacts. Check the sample app to see examples.
 
 # Suggestions
 
