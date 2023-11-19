@@ -1,5 +1,4 @@
 import androidx.compose.runtime.Composable
+import com.arkivanov.decompose.DefaultComponentContext
 
-actual fun getPlatformName(): String = "Android"
-
-@Composable fun MainView() = App()
+@Composable fun MainView(componentContext: DefaultComponentContext) = App(componentContext)
