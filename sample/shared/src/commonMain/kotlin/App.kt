@@ -26,7 +26,7 @@ fun App(componentContext: DefaultComponentContext? = null) = MaterialTheme {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         bottomBar = {
-            val currentScreen = navController?.currentDestination
+            val currentScreen = navController.currentDestination
             NavigationBar {
                 NavigationBarItem(
                     selected = currentScreen is Screen.Category1,
@@ -109,8 +109,6 @@ fun App(componentContext: DefaultComponentContext? = null) = MaterialTheme {
                 }
             }
         }
-        Text(navController.currentDestination.toString(), modifier = Modifier.padding(scaffoldPadding))
-
     }
 }
 
