@@ -12,6 +12,8 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation(project(":sample:shared"))
+                implementation(libs.decompose)
+                implementation(libs.decompose.extensions)
             }
         }
     }

@@ -62,14 +62,15 @@ fun <C : Any, T : Any> DecomposeNavHost(
 @Composable
 fun <C : Any> rememberDecomposeNavController(
     startingDestination: C,
-    componentContext: DefaultComponentContext = DefaultComponentContext(
-        LifecycleRegistry(),
-        StateKeeperDispatcher(savedState = tryRestoreStateFromFile())
+    componentContext: DefaultComponentContext? = null
+): DecomposeNavController<C> = remember {
+    DecomposeNavController(
+        componentContext ?: DefaultComponentContext(
+            LifecycleRegistry(),
+            StateKeeperDispatcher(savedState = tryRestoreStateFromFile())
+        ),
+        startingDestination
     )
-): DecomposeNavController<C> {
-    return remember {
-        DecomposeNavController(componentContext, startingDestination)
-    }
 }
 
 class DecomposeNavController<C : Any>(
