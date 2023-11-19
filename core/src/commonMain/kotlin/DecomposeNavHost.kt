@@ -5,20 +5,11 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.Children
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.StackAnimation
-import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.fade
-import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.plus
-import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.scale
-import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.stackAnimation
 import com.arkivanov.decompose.router.stack.*
 import com.arkivanov.decompose.value.Value
-import com.arkivanov.essenty.backhandler.BackCallback
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.parcelable.ParcelableContainer
-import com.arkivanov.essenty.statekeeper.StateKeeper
 import com.arkivanov.essenty.statekeeper.StateKeeperDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.io.File
 import java.io.ObjectInputStream
 
@@ -27,7 +18,6 @@ fun <C : Any, T : Any> DecomposeNavHost(
     navController: DecomposeNavController<C>,
     modifier: Modifier = Modifier,
     animation: StackAnimation<C, T>,
-
     content: @Composable (
         destination: C,
         componentContext: ComponentContext,
@@ -38,15 +28,7 @@ fun <C : Any, T : Any> DecomposeNavHost(
     modifier,
     animation
 ) {
-    // this is needed so that the T is inferred properly so that we pass
-    // the animation parameter correctly
     val childWithCorrectType = it as Child.Created<*, DecomposeChildInstance<C>>
-
-//    androidx.activity.compose.BackHandler(
-//        navController.stack.items.size != 1 && animation is PredictiveBackAnimation
-//    ) {
-//        navController.pop()
-//    }
 
     content(
         childWithCorrectType.instance.config,
@@ -56,8 +38,7 @@ fun <C : Any, T : Any> DecomposeNavHost(
 }
 
 /**
- * Pass the component context on android if you're going to use the
- * decompose predictive gestures
+ * Pass the component context on android pls :3
  */
 @Composable
 fun <C : Any> rememberDecomposeNavController(
