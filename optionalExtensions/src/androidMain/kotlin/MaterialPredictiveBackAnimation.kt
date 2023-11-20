@@ -1,3 +1,7 @@
+@file:OptIn(ExperimentalDecomposeApi::class)
+
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,57 +12,110 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.Child
+import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.*
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.essenty.backhandler.BackCallback
 import com.arkivanov.essenty.backhandler.BackEvent
 import com.arkivanov.essenty.backhandler.BackHandler
-import kotlinx.coroutines.*
-import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.launch
 
 fun <C : Any, T : Any> materialPredictiveBackAnimation(
     backHandler: BackHandler,
-    animation: StackAnimation<C, T>? = stackAnimation(fade() + scale()),
-    exitModifier: (processedOffset: Offset, processedScale: Float, gestureProgress: Float, windowTransitionProgress: Float) -> Modifier = { processedOffset, processedScale, gestureProgress, windowTransitionProgress ->
-        Modifier.exitModifier(
-            processedOffset,
-            processedScale,
-            gestureProgress,
-            windowTransitionProgress
-        )
-    },
-    enterModifier: (windowTransitionProgress: Float) -> Modifier = { Modifier.enterModifier(it) },
+    animation: StackAnimation<C, T> = stackAnimation(fade() + scale()),
+    windowWidthDp: Int,
     onBack: () -> Unit,
-    windowSize: IntSize,
-    density: Density,
-): StackAnimation<C, T> =  PredictiveBackAnimation(
-    backHandler = backHandler,
-    animation = animation ?: StackAnimation { stack, modifier, childContent ->
-        Box(modifier = modifier) {
-            childContent(stack.active)
-        }
+    densityProvider: Density,
+    selector: (
+        initialBackEvent: BackEvent,
+        exitChild: Child.Created<C, T>,
+        enterChild: Child.Created<C, T>
+    ) -> PredictiveBackAnimatable = { initialBackEvent, exitChild, enterChild ->
+        MaterialPredictiveBackAnimatable(initialBackEvent, windowWidthDp, densityProvider)
     },
-    exitModifier = exitModifier,
-    enterModifier = enterModifier,
-    onBack = onBack,
-    windowSize,
-    density
+): StackAnimation<C, T> = PredictiveBackAnimation(
+    backHandler,
+    animation,
+    selector,
+    onBack
 )
 
+@OptIn(ExperimentalDecomposeApi::class)
+class MaterialPredictiveBackAnimatable(
+    initialBackEvent: BackEvent,
+    windowWidthDp: Int,
+    private val densityProvider: Density
+) : PredictiveBackAnimatable {
+
+    private val progressAnimatable = Animatable(initialValue = 1F)
+    private var gestureData by mutableStateOf(initialBackEvent)
+
+    private var gestureOffsetWhenStarted by mutableStateOf(Offset.Zero)
+
+    private val gestureSwipeDistanceOffsetY = { gestureData.touchY - gestureOffsetWhenStarted.y }
+
+    // when progressAnimatable is 0 - the offset will be also
+    // 0, aka the default
+    private var processedOffset = {
+        Offset(
+            x = if (gestureData.swipeEdge == BackEvent.SwipeEdge.LEFT)
+                (((windowWidthDp * 0.05f) - 8) * gestureData.progress) * densityProvider.density
+            else
+                -(((windowWidthDp * 0.05f) - 8) * gestureData.progress) * densityProvider.density,
+            y = (((gestureSwipeDistanceOffsetY() * 0.05f) - 8)
+                    // limit vertical offset movement if gesture progress is close to 0
+                    // once gesture progress is at 30% - max vertical movement
+                    * (gestureData.progress * 3).coerceAtMost(1f))
+                    * densityProvider.density
+        )
+    }
+
+    // the first part is responsible for scale while the gesture
+    // is being performed
+
+    // the second part of the equation is responsible for scale
+    // animation that happens after finish() is called
+    private val processedScale = {
+        1f - ((gestureData.progress * 0.1f)
+                + ((1f - progressAnimatable.value) * 0.15f))
+    }
+
+    override val exitModifier: Modifier
+        get() = Modifier.exitModifier(
+            processedOffset,
+            processedScale,
+            gestureData.progress,
+            progressAnimatable.value
+        )
+
+    override val enterModifier: Modifier get() = Modifier.enterModifier(progressAnimatable.value)
+
+    override fun onStart(event: BackEvent) {
+        gestureOffsetWhenStarted = Offset(event.touchX, event.touchY)
+    }
+
+    override fun animate(event: BackEvent) {
+        gestureData = event
+    }
+
+    override suspend fun finish() {
+        progressAnimatable.animateTo(targetValue = 0F, animationSpec = tween(durationMillis = 300))
+    }
+}
+
 private fun Modifier.exitModifier(
-    processedOffset: Offset,
-    processedScale: Float,
+    processedOffset: () -> Offset,
+    processedScale: () -> Float,
     gestureProgress: Float,
     windowTransitionProgress: Float
 ): Modifier = graphicsLayer {
-    scaleX = processedScale
-    scaleY = processedScale
+    scaleX = processedScale()
+    scaleY = processedScale()
 
-    translationX = processedOffset.x
-    translationY = processedOffset.y
+    translationX = processedOffset().x
+    translationY = processedOffset().y
 
     clip = true
     shape = RoundedCornerShape(((32 * gestureProgress) * windowTransitionProgress).dp)
@@ -66,26 +123,23 @@ private fun Modifier.exitModifier(
     alpha = windowTransitionProgress
 }
 
-private fun Modifier.enterModifier(windowTransitionProgress: Float): Modifier =
-    drawWithContent {
-        drawContent()
-        drawRect(color = Color(0F, 0F, 0F, alpha = 0.3f * windowTransitionProgress))
-    }
+private fun Modifier.enterModifier(windowTransitionProgress: Float): Modifier = drawWithContent {
+    drawContent()
+    drawRect(color = Color(0F, 0F, 0F, alpha = 0.2f * windowTransitionProgress))
+}
 
-public class PredictiveBackAnimation<C : Any, T : Any>(
+
+
+
+
+
+class PredictiveBackAnimation<C : Any, T : Any>(
     private val backHandler: BackHandler,
     private val animation: StackAnimation<C, T>,
-    private val exitModifier: (
-        processedOffset: Offset,
-        processedScale: Float,
-        gestureProgress: Float,
-        windowTransitionProgress: Float
-    ) -> Modifier,
-    private val enterModifier: (windowTransitionProgress: Float) -> Modifier,
+    private val selector: (BackEvent, exitChild: Child.Created<C, T>, enterChild: Child.Created<C, T>) -> PredictiveBackAnimatable,
     private val onBack: () -> Unit,
-    private val windowSize: IntSize,
-    private val density: Density
 ) : StackAnimation<C, T> {
+
     @Composable
     override fun invoke(stack: ChildStack<C, T>, modifier: Modifier, content: @Composable (child: Child.Created<C, T>) -> Unit) {
         var activeConfigurations: Set<C> by remember { mutableStateOf(emptySet()) }
@@ -104,63 +158,66 @@ public class PredictiveBackAnimation<C : Any, T : Any>(
                 }
             }
 
-        val currentKey = remember { Holder(value = 0) }
+        var data: Data<C, T> by rememberMutableStateWithLatest(key = stack) { latestData ->
+            Data(stack = stack, key = latestData?.nextKey ?: 0)
+        }
 
-        var items: List<Item<C, T>> by rememberMutableStateWithLatest(
-            key = stack,
-            onReplaced = { latestItems -> currentKey.value = latestItems.maxOf(Item<*, *>::key) },
-            getValue = { listOf(Item(stack = stack, key = currentKey.value)) },
-        )
+        val (dataStack, dataKey, dataAnimatable) = data
+
+        val items =
+            if (dataAnimatable == null) {
+                listOf(Item(stack = dataStack, key = dataKey, modifier = Modifier))
+            } else {
+                listOf(
+                    Item(stack = dataStack.dropLast(), key = dataKey + 1, modifier = dataAnimatable.enterModifier),
+                    Item(stack = dataStack, key = dataKey, modifier = dataAnimatable.exitModifier),
+                )
+            }
 
         Box(modifier = modifier) {
             items.forEach { item ->
                 key(item.key) {
                     animation(
                         stack = item.stack,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .then(item.modifier),
+                        modifier = Modifier.fillMaxSize().then(item.modifier),
                         content = childContent,
                     )
                 }
             }
         }
 
-        val isBackEnabled = stack.backStack.isNotEmpty()
-        val isBackGestureEnabled = isBackEnabled && ((items.size > 1) || (items.size == 1) && (activeConfigurations.size == 1))
+        val isBackEnabled = dataStack.backStack.isNotEmpty()
+        val isBackGestureEnabled = isBackEnabled && ((dataAnimatable != null) || (activeConfigurations.size == 1))
 
-        DisposableEffect(stack, isBackEnabled, isBackGestureEnabled) {
-            if (!isBackEnabled) {
-                return@DisposableEffect onDispose {}
-            }
+        if (isBackEnabled) {
+            if (isBackGestureEnabled) {
+                val scope = rememberCoroutineScope()
 
-            val scope = CoroutineScope(Dispatchers.Main.immediate)
-
-            val callback =
-                if (isBackGestureEnabled) {
-                    GestureBackCallback(
-                        scope = scope,
-                        stack = stack,
-                        currentKey = currentKey.value,
-                        exitModifier = exitModifier,
-                        enterModifier = enterModifier,
-                        setItems = { items = it },
-                        onFinished = { newKey ->
-                            currentKey.value = newKey
+                BackGestureHandler(
+                    backHandler = backHandler,
+                    onBackStarted = {
+                        data = data.copy(animatable = selector(it, data.stack.active, data.stack.backStack.last()))
+                        data.animatable?.onStart(it)
+                    },
+                    onBackProgressed = {
+                        data.animatable?.animate(it)
+                    },
+                    onBackCancelled = {
+                        data = data.copy(animatable = null)
+                    },
+                    onBack = {
+                        if (data.animatable == null) {
                             onBack()
-                        },
-                        windowSize,
-                        density
-                    )
-                } else {
-                    BackCallback(onBack = onBack)
-                }
-
-            backHandler.register(callback)
-
-            onDispose {
-                scope.cancel()
-                backHandler.unregister(callback)
+                        } else {
+                            scope.launch {
+                                data.animatable?.finish()
+                                onBack()
+                            }
+                        }
+                    }
+                )
+            } else {
+                BackGestureHandler(backHandler = backHandler, onBack = onBack)
             }
         }
     }
@@ -168,135 +225,87 @@ public class PredictiveBackAnimation<C : Any, T : Any>(
     @Composable
     private fun <T : Any> rememberMutableStateWithLatest(
         key: Any,
-        onReplaced: (latestValue: T) -> Unit,
-        getValue: () -> T,
+        getValue: (latestValue: T?) -> T,
     ): MutableState<T> {
         val latestValue: Holder<T?> = remember { Holder(value = null) }
-
-        val state =
-            remember(key) {
-                latestValue.value?.also(onReplaced)
-                mutableStateOf(getValue())
-            }
-
+        val state = remember(key) { mutableStateOf(getValue(latestValue.value)) }
         latestValue.value = state.value
 
         return state
     }
 
-    private data class StackItemData<out C : Any, out T : Any>(
-        val exitItem: Item<C, T>,
-        val enterItem: Item<C, T>,
-    )
+    private fun <C : Any, T : Any> ChildStack<C, T>.dropLast(): ChildStack<C, T> =
+        ChildStack(active = backStack.last(), backStack = backStack.dropLast(1))
+
+    private data class Data<out C : Any, out T : Any>(
+        val stack: ChildStack<C, T>,
+        val key: Int,
+        val animatable: PredictiveBackAnimatable? = null,
+    ) {
+        val nextKey: Int get() = if (animatable == null) key else key + 1
+    }
 
     private data class Item<out C : Any, out T : Any>(
         val stack: ChildStack<C, T>,
         val key: Int,
-        val modifier: Modifier = Modifier,
+        val modifier: Modifier,
     )
 
     private class Holder<T>(var value: T)
+}
 
-    private class GestureBackCallback<C : Any, T : Any>(
-        private val scope: CoroutineScope,
-        stack: ChildStack<C, T>,
-        currentKey: Int,
-        private val exitModifier: (
-            processedOffset: Offset,
-            processedScale: Float,
-            gestureProgress: Float,
-            windowTransitionProgress: Float
-        ) -> Modifier,
-        private val enterModifier: (windowTransitionProgress: Float) -> Modifier,
-        private val setItems: (List<Item<C, T>>) -> Unit,
-        private val onFinished: (newKey: Int) -> Unit,
-        private val windowSize: IntSize,
-        private val density: Density
-    ) : BackCallback() {
-        private fun ChildStack<C, T>.dropLast(): ChildStack<C, T> = ChildStack(
-            active = backStack.last(),
-            backStack = backStack.dropLast(1)
+@Composable
+fun BackGestureHandler(
+    backHandler: BackHandler,
+    onBackStarted: (BackEvent) -> Unit = {},
+    onBackProgressed: (BackEvent) -> Unit = {},
+    onBackCancelled: () -> Unit = {},
+    onBack: () -> Unit,
+) {
+    val callback =
+        BackCallback(
+            onBackStarted = onBackStarted,
+            onBackProgressed = onBackProgressed,
+            onBackCancelled = onBackCancelled,
+            onBack = onBack,
         )
-        private var stackItemData: StackItemData<C, T> =
-            StackItemData(
-                exitItem = Item(stack = stack, key = currentKey),
-                enterItem = Item(stack = stack.dropLast(), key = currentKey + 1),
-            )
 
-        var backEventData = BackEvent(0f, BackEvent.SwipeEdge.UNKNOWN, 0f, 0f)
-
-        var mockAnimationProgress = 1f
-        private var gestureOffsetWhenStarted = Offset.Zero
-
-        override fun onBackStarted(backEvent: BackEvent) {
-            updateBackEventData(backEvent)
-
-            // remember where on the screen the gesture started
-            gestureOffsetWhenStarted = Offset(backEvent.touchX, backEvent.touchY)
-        }
-
-        private fun updateBackEventData(backEvent: BackEvent) {
-            backEventData = backEvent
-            stackItemData = stackItemData.update()
-            setItems(listOf(stackItemData.enterItem, stackItemData.exitItem))
-        }
-
-        override fun onBackProgressed(backEvent: BackEvent) {
-            updateBackEventData(backEvent)
-        }
-
-        override fun onBackCancelled() {
-            setItems(listOf(stackItemData.exitItem.copy(modifier = Modifier)))
-        }
-
-        override fun onBack() {
-            scope.launch {
-                while ((mockAnimationProgress > 0F) && isActive) {
-                    delay(8.milliseconds) // for 120hz screens
-                    mockAnimationProgress -= 0.2F
-                    stackItemData = stackItemData.update(animationProgress = mockAnimationProgress)
-                    setItems(listOf(stackItemData.enterItem, stackItemData.exitItem))
-                }
-
-                if (isActive) {
-                    setItems(listOf(stackItemData.enterItem.copy(modifier = Modifier)))
-                    onFinished(stackItemData.enterItem.key)
-                }
-            }
-        }
-
-        private fun StackItemData<C, T>.update(
-            gestureProgress: Float = backEventData.progress,
-            edge: BackEvent.SwipeEdge = backEventData.swipeEdge,
-            animationProgress: Float = mockAnimationProgress
-        ): StackItemData<C, T> {
-
-
-            val gestureSwipeDistanceOffset = Offset(
-                x = backEventData.touchX - gestureOffsetWhenStarted.x,
-                y = backEventData.touchY - gestureOffsetWhenStarted.y
-            )
-            // when mockAnimationProgress is 0 - the offset will be also
-            // 0, aka the default
-            val processedOffset = Offset(
-                x = if (edge == BackEvent.SwipeEdge.LEFT)
-                    ((windowSize.width * 0.05f) - (8 * density.density)) * gestureProgress
-                else
-                    -(((windowSize.width * 0.05f) - (8 * density.density)) * gestureProgress),
-                y = (gestureSwipeDistanceOffset.y * 0.05f) * density.density
-            )
-
-            // the first part is responsible for scale while the gesture
-            // is being performed
-
-            // the second part of the equation is responsible for scale
-            // animation that happens after onBack() is called
-            val processedScale = 1f - ((gestureProgress * 0.1f) + ((1f - animationProgress) * 0.05f))
-
-            return copy(
-                exitItem = exitItem.copy(modifier = exitModifier(processedOffset, processedScale, gestureProgress, animationProgress)),
-                enterItem = enterItem.copy(modifier = enterModifier(animationProgress)),
-            )
-        }
+    DisposableEffect(backHandler) {
+        backHandler.register(callback)
+        onDispose { backHandler.unregister(callback) }
     }
+}
+
+@ExperimentalDecomposeApi
+interface PredictiveBackAnimatable {
+
+    /**
+     * Returns a [Modifier] for the child being removed (the currently active child).
+     * The property must be Compose-observable, e.g. be backed by a Compose state.
+     */
+    val exitModifier: Modifier
+
+    /**
+     * Returns a [Modifier] for the child being shown (the previous child, behind the currently active child).
+     * The property must be Compose-observable, e.g. be backed by a Compose state.
+     */
+    val enterModifier: Modifier
+
+    fun onStart(event: BackEvent)
+
+    /**
+     * Animates both [exitModifier] and [enterModifier] according to [event].
+     * Any previous animation must be cancelled.
+     *
+     * @see androidx.compose.animation.core.Animatable
+     */
+    fun animate(event: BackEvent)
+
+    /**
+     * Animates both [exitModifier] and [enterModifier] towards the final state.
+     * Any previous animation must be cancelled.
+     *
+     * @see androidx.compose.animation.core.Animatable
+     */
+    suspend fun finish()
 }
