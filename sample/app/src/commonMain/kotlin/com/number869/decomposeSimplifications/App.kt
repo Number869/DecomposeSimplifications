@@ -2,6 +2,7 @@ package com.number869.decomposeSimplifications
 
 import DecomposeNavController
 import DecomposeNavHost
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import java.util.*
  * type is needed to pass down animation parameters from the android
  * target because we are using predictive back on android 14+
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T: Any> App(
     navController: DecomposeNavController<Screen> = rememberDecomposeNavController(
@@ -29,10 +31,17 @@ fun <T: Any> App(
     ),
     animation: StackAnimation<Screen, T> = stackAnimation(fade() + scale())
 ) = MaterialTheme {
+    val currentScreen = navController.currentDestination
+    val appBarsVisible = currentScreen !is Screen.Category1.Option1
+
     Scaffold(
+        topBar = {
+            AnimatedVisibility(appBarsVisible) {
+                CenterAlignedTopAppBar(title = { Text("Decompose Simplifications") })
+            }
+        },
         containerColor = MaterialTheme.colorScheme.surface,
         bottomBar = {
-            val currentScreen = navController.currentDestination
             NavigationBar {
                 NavigationBarItem(
                     selected = currentScreen is Screen.Category1,
