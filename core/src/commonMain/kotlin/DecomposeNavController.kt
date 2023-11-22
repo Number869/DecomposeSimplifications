@@ -2,7 +2,6 @@ import androidx.compose.runtime.*
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.router.stack.*
-import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.parcelable.ParcelableContainer
 import com.arkivanov.essenty.statekeeper.StateKeeperDispatcher
@@ -31,12 +30,12 @@ fun <C : Any> rememberDecomposeNavController(
 
 class DecomposeNavController<C : Any>(
     componentContext: DefaultComponentContext,
-    startingDestination: C,
+    startingDestination: C
 ) : ComponentContext by componentContext {
     private val navigation = StackNavigation<C>()
 
     @OptIn(InternalSerializationApi::class)
-    private val serialzer = startingDestination::class.serializer() as KSerializer<C>
+    private val serialzer = serializer(startingDestination.javaClass) as KSerializer<C>
 
     val stack = childStack(
         source = navigation,
@@ -44,7 +43,7 @@ class DecomposeNavController<C : Any>(
         initialConfiguration = startingDestination,
         handleBackButton = true,
         childFactory = ::child
-    ) as Value<ChildStack<*, DecomposeChildInstance<C>>>
+    )
 
     private var _currentDestination by mutableStateOf(stack.active.instance.config)
     val currentDestination get() = _currentDestination
