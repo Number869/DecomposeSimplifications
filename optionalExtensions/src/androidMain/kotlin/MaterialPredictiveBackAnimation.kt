@@ -1,20 +1,24 @@
 @file:OptIn(ExperimentalDecomposeApi::class)
 
-import android.os.Build.VERSION
-import android.os.Build.VERSION_CODES
+import android.content.Context
+import android.os.Build
 import android.view.RoundedCorner
-import android.view.WindowInsets
+import android.view.WindowManager
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.ExperimentalDecomposeApi
@@ -26,26 +30,25 @@ import com.arkivanov.essenty.backhandler.BackHandler
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalDecomposeApi::class)
 fun <C : Any, T : Any> materialPredictiveBackAnimation(
     backHandler: BackHandler,
     animation: StackAnimation<C, T> = stackAnimation(fade() + scale()),
     onBack: () -> Unit,
-    windowInsets: WindowInsets? = null,
+    cornerRadius: Dp = 16.dp,
     selector: (
         initialBackEvent: BackEvent,
         exitChild: Child.Created<C, T>,
         enterChild: Child.Created<C, T>
     ) -> PredictiveBackAnimatable = { initialBackEvent, exitChild, enterChild ->
-        MaterialPredictiveBackAnimatable(initialBackEvent, windowInsets)
+        MaterialPredictiveBackAnimatable(initialBackEvent, cornerRadius)
     },
-): StackAnimation<C, T> {
-    return predictiveBackAnimation(backHandler, animation, selector, onBack)
-}
+): StackAnimation<C, T> = predictiveBackAnimation(backHandler, animation, selector, onBack)
 
 @OptIn(ExperimentalDecomposeApi::class)
 private class MaterialPredictiveBackAnimatable(
     private val initialEvent: BackEvent,
-    val windowInsets: WindowInsets?
+    private val cornerRadius: Dp
 ) : PredictiveBackAnimatable {
     private val finishProgressAnimatable = Animatable(initialValue = 1F)
     private val finishProgress by derivedStateOf { finishProgressAnimatable.value }
@@ -55,57 +58,60 @@ private class MaterialPredictiveBackAnimatable(
     private var touchY by mutableFloatStateOf(initialEvent.touchY)
 
     override val exitModifier: Modifier
-        @RequiresApi(VERSION_CODES.S)
-        get() =
-            Modifier
-                .scaleFromEdge()
-                .alpha(finishProgress)
+        @RequiresApi(Build.VERSION_CODES.S)
+        get() = Modifier.composed {
+            val context = LocalContext.current
+            val windowInsets = LocalView.current.rootWindowInsets
+            val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            val screen = wm.maximumWindowMetrics.bounds
+            val actualScreenSize = Size(screen.height().toFloat(), screen.width().toFloat())
+            val devicesCornerRadius = windowInsets.getRoundedCorner(RoundedCorner.POSITION_TOP_LEFT)?.radius
+
+            graphicsLayer {
+                val layerIsFullscreen = actualScreenSize == this.size
+
+                val layerCornerRadius = if (layerIsFullscreen && devicesCornerRadius != null) {
+                    (devicesCornerRadius / density).dp
+                } else {
+                    cornerRadius * progress
+                }
+
+                transformOrigin = TransformOrigin(
+                    pivotFractionX = when (edge) {
+                        BackEvent.SwipeEdge.LEFT -> 1F
+                        BackEvent.SwipeEdge.RIGHT -> 0F
+                        BackEvent.SwipeEdge.UNKNOWN -> 0.5F
+                    },
+                    pivotFractionY = 0.5F
+                )
+
+                val scale = 1F - progress / 10F
+                scaleX = scale
+                scaleY = scale
+
+                val translationXLimit = when (edge) {
+                    BackEvent.SwipeEdge.LEFT -> -8.dp.toPx()
+                    BackEvent.SwipeEdge.RIGHT -> 8.dp.toPx()
+                    BackEvent.SwipeEdge.UNKNOWN -> 0F
+                }
+                translationX = translationXLimit * progress
+
+                val translationYLimit = size.height / 20F - 8.dp.toPx()
+                val translationYFactor = ((touchY - initialEvent.touchY) / size.height) * (progress * 3F).coerceAtMost(1f)
+                translationY = translationYLimit * translationYFactor
+
+                alpha = finishProgress
+                shape = RoundedCornerShape(layerCornerRadius)
+                clip = true
+            }
+        }
 
     override val enterModifier: Modifier
         get() =
             Modifier.drawWithContent {
                 drawContent()
-                drawRect(color = Color(red = 0F, green = 0F, blue = 0F, alpha = finishProgress * 0.20F))
+                drawRect(color = Color.Black.copy(alpha = finishProgress * 0.25F))
             }
-
-    private fun Modifier.scaleFromEdge(): Modifier =
-        graphicsLayer {
-            // is 0 when window insets are null or the api level is too low
-            val deviceRoundedCorner = if (VERSION.SDK_INT >= VERSION_CODES.S) {
-                windowInsets?.getRoundedCorner(RoundedCorner.POSITION_TOP_LEFT)?.radius
-            } else null
-
-            // if deviceRoundedCorner is null - fall back to the old animation
-            val roundedCorners = (deviceRoundedCorner?.div(density))?.dp ?: (16 * progress).dp
-
-            clip = true
-            shape = RoundedCornerShape(roundedCorners)
-
-            val pivotFractionX =
-                when (edge) {
-                    BackEvent.SwipeEdge.LEFT -> 1F
-                    BackEvent.SwipeEdge.RIGHT -> 0F
-                    BackEvent.SwipeEdge.UNKNOWN -> 0.5F
-                }
-
-            transformOrigin = TransformOrigin(pivotFractionX = pivotFractionX, pivotFractionY = 0.5F)
-
-            val scale = 1F - progress * 0.1F
-            scaleX = scale
-            scaleY = scale
-
-            val translationXLimit =
-                when (edge) {
-                    BackEvent.SwipeEdge.LEFT -> -8.dp.toPx()
-                    BackEvent.SwipeEdge.RIGHT -> 8.dp.toPx()
-                    BackEvent.SwipeEdge.UNKNOWN -> 0F
-                }
-
-            translationX = translationXLimit * progress
-
-            val translationYLimit = size.height / 20F - 8.dp.toPx()
-            translationY = (translationYLimit * ((touchY - initialEvent.touchY) / size.height))  * (progress * 3).coerceAtMost(1f)
-        }
 
     override suspend fun animate(event: BackEvent) {
         edge = event.swipeEdge
