@@ -15,9 +15,10 @@ class AppActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val navController = rememberDecomposeNavController<Screen>(
+            val navController = rememberDecomposeNavController(
                 startingDestination = Screen.Category1.Default,
-                defaultComponentContext()
+                defaultComponentContext(),
+                serializer = Screen.serializer()
             )
 
             enableEdgeToEdge()
