@@ -18,19 +18,15 @@ fun <C : Any, T : Any> DecomposeNavHost(
         instance: DecomposeChildInstance<C>
     ) -> Unit
 ) = Children(
-    (navController.stack as Value<ChildStack<C, T>,>).value,
+    navController.stack as Value<ChildStack<C, T>>,
     modifier,
     animation
 ) {
-    val childWithCorrectType = it as? Child.Created<*, DecomposeChildInstance<C>>
+    val childWithCorrectType = it as? Child.Created<C, DecomposeChildInstance<C>>
 
-    runCatching {
-        content(
-            childWithCorrectType!!.instance.config,
-            childWithCorrectType.instance.componentContext,
-            childWithCorrectType.instance
-        )
-    }.onFailure { exception ->
-        throw exception
-    }
+    content(
+        childWithCorrectType!!.instance.config,
+        childWithCorrectType.instance.componentContext,
+        childWithCorrectType.instance
+    )
 }
