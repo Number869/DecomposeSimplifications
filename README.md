@@ -6,7 +6,7 @@ This is a set of things that i made for myself that simplify the use of the Deco
 
 # How to use this?
 
-Add ```maven { url = uri("https://jitpack.io") }``` to ```dependencyResolutionManagement { repositories { ... } }``` in settings.gradle.kts, then just just add the necessary artifacts. If you use libs.versions.toml, add ```decompose-simplifications = { group = "com.github.Number869.decomposeSimplifications", name = "decompose-simplifications-core or any other module", version = "library version specified at the top of this readme" }``` Check the sample app to see examples.
+Add ```maven { url = uri("https://jitpack.io") }``` to ```dependencyResolutionManagement { repositories { ... } }``` in settings.gradle.kts, then just just add the necessary artifacts. If you use libs.versions.toml, add ```decompose-simplifications = { group = "com.github.Number869.decomposeSimplifications", name = "decompose-simplifications-core or any other module", version = "library version specified at the top of this readme" }``` Check the sample app to see examples (you can start from [here](https://github.com/Number869/DecomposeSimplifications/blob/master/sample/app/src/commonMain/kotlin/com/number869/decomposeSimplifications/App.kt)).
 
 # Suggestions
 
