@@ -27,6 +27,7 @@ import java.util.*
 fun <T: Any> App(
     navController: DecomposeNavController<Screen> = rememberDecomposeNavController(
         startingDestination = Screen.Category1.Default,
+        serializer = Screen.serializer()
     ),
     animation: StackAnimation<Screen, T> = stackAnimation(fade() + scale())
 ) = MaterialTheme {

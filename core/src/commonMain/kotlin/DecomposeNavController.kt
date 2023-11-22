@@ -5,9 +5,7 @@ import com.arkivanov.decompose.router.stack.*
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.parcelable.ParcelableContainer
 import com.arkivanov.essenty.statekeeper.StateKeeperDispatcher
-import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.serializer
 import java.io.File
 import java.io.ObjectInputStream
 
@@ -17,7 +15,8 @@ import java.io.ObjectInputStream
 @Composable
 fun <C : Any> rememberDecomposeNavController(
     startingDestination: C,
-    componentContext: DefaultComponentContext? = null
+    componentContext: DefaultComponentContext? = null,
+    serializer: KSerializer<C>? = null
 ): DecomposeNavController<C> = remember {
     DecomposeNavController(
         componentContext ?: DefaultComponentContext(
@@ -25,21 +24,34 @@ fun <C : Any> rememberDecomposeNavController(
             StateKeeperDispatcher(savedState = tryRestoreStateFromFile())
         ),
         startingDestination,
+        serializer = serializer
     )
 }
 
+fun <C : Any> decomposeNavController(
+    startingDestination: C,
+    componentContext: DefaultComponentContext? = null,
+    serializer: KSerializer<C>? = null
+): DecomposeNavController<C> = DecomposeNavController(
+    componentContext ?: DefaultComponentContext(
+        LifecycleRegistry(),
+        StateKeeperDispatcher(savedState = tryRestoreStateFromFile())
+    ),
+    startingDestination,
+    serializer
+)
+
+
 class DecomposeNavController<C : Any>(
     componentContext: DefaultComponentContext,
-    startingDestination: C
+    startingDestination: C,
+    serializer: KSerializer<C>?
 ) : ComponentContext by componentContext {
     private val navigation = StackNavigation<C>()
 
-    @OptIn(InternalSerializationApi::class)
-    private val serialzer = serializer(startingDestination.javaClass) as KSerializer<C>
-
     val stack = childStack(
         source = navigation,
-        serializer = serialzer,
+        serializer = serializer,
         initialConfiguration = startingDestination,
         handleBackButton = true,
         childFactory = ::child
