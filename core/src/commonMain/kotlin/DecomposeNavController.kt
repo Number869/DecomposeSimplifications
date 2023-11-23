@@ -54,7 +54,7 @@ class DecomposeNavController<C : Any>(
         serializer = serializer,
         initialConfiguration = startingDestination,
         handleBackButton = true,
-        childFactory = ::child
+        childFactory = { config, componentContext -> DecomposeChildInstance(config, componentContext) }
     )
 
     private var _currentDestination by mutableStateOf(stack.active.instance.config)
@@ -62,23 +62,17 @@ class DecomposeNavController<C : Any>(
 
     fun onBackClicked(toIndex: Int) {
         navigation.popTo(index = toIndex)
-        _currentDestination = stack.active.instance.config
+        _currentDestination = stack.items.last().configuration
     }
-
-    private fun child(
-        config: C,
-        componentContext: ComponentContext
-    ): DecomposeChildInstance<C> = DecomposeChildInstance(config, componentContext)
-
 
     fun navigate(targetDestination: C) {
         navigation.bringToFront(targetDestination)
-        _currentDestination = stack.active.instance.config
+        _currentDestination = stack.items.last().configuration
     }
 
     fun pop(onComplete: (isSuccess: Boolean) -> Unit = {}) {
         navigation.pop(onComplete)
-        _currentDestination = stack.active.instance.config
+        _currentDestination = stack.items.last().configuration
     }
 }
 
