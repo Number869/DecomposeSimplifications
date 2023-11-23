@@ -1,8 +1,5 @@
 package com.number869.decomposeSimplifications
 
-import DecomposeChildInstance
-import DecomposeNavController
-import DecomposeNavHost
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,8 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.*
+import com.number869.decomposeSimplifications.core.common.DecomposeChildInstance
+import com.number869.decomposeSimplifications.core.common.DecomposeNavController
+import com.number869.decomposeSimplifications.core.common.DecomposeNavHost
+import com.number869.decomposeSimplifications.core.common.rememberDecomposeNavController
 import kotlinx.serialization.Serializable
-import rememberDecomposeNavController
 import java.util.*
 
 

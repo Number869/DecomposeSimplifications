@@ -1,3 +1,5 @@
+package com.number869.decomposeSimplifications.core.common
+
 import androidx.compose.runtime.*
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.DefaultComponentContext

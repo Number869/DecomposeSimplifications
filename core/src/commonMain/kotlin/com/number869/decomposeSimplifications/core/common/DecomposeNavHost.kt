@@ -1,3 +1,5 @@
+package com.number869.decomposeSimplifications.core.common
+
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.Child

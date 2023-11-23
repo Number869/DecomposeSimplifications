@@ -6,8 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.defaultComponentContext
-import materialPredictiveBackAnimation
-import rememberDecomposeNavController
+import com.number869.decomposeSimplifications.core.common.rememberDecomposeNavController
+import com.number869.decomposeSimplifications.optionalExtensions.android.materialPredictiveBackAnimation
 
 class AppActivity : ComponentActivity() {
     @OptIn(ExperimentalDecomposeApi::class)
