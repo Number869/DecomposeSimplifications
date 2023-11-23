@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.maven.publish)
+    alias(libs.plugins.binary.compatibility.validator)
 }
 
 kotlin {
@@ -72,6 +73,10 @@ android {
     kotlin {
         jvmToolchain(17)
     }
+}
+
+apiValidation {
+    ignoredPackages.add("com.arkivanov.decompose")
 }
 
 mavenPublishing {
