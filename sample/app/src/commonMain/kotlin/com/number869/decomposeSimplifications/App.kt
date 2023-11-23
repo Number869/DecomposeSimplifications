@@ -19,10 +19,7 @@ import kotlinx.serialization.Serializable
 import rememberDecomposeNavController
 import java.util.*
 
-/**
- * type is needed to pass down animation parameters from the android
- * target because we are using predictive back on android 14+
- */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App(
