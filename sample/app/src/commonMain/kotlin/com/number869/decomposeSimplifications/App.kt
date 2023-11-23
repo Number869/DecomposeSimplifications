@@ -1,5 +1,6 @@
 package com.number869.decomposeSimplifications
 
+import DecomposeChildInstance
 import DecomposeNavController
 import DecomposeNavHost
 import androidx.compose.foundation.background
@@ -24,15 +25,14 @@ import java.util.*
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <T: Any> App(
+fun App(
     navController: DecomposeNavController<Screen> = rememberDecomposeNavController(
         startingDestination = Screen.Category1.Default,
         serializer = Screen.serializer()
     ),
-    animation: StackAnimation<Screen, T> = stackAnimation(fade() + scale())
+    animation: StackAnimation<Screen, DecomposeChildInstance<Screen>> = stackAnimation(fade() + scale())
 ) = MaterialTheme {
     val currentScreen = navController.currentDestination
-    val appBarsVisible = currentScreen !is Screen.Category1.Option1
 
     Scaffold(
         topBar = {

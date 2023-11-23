@@ -4,21 +4,19 @@ import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.Children
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.StackAnimation
-import com.arkivanov.decompose.router.stack.ChildStack
-import com.arkivanov.decompose.value.Value
 
 @Composable
-fun <C : Any, T : Any> DecomposeNavHost(
+fun <C : Any> DecomposeNavHost(
     navController: DecomposeNavController<C>,
     modifier: Modifier = Modifier,
-    animation: StackAnimation<C, T>,
+    animation: StackAnimation<C, DecomposeChildInstance<C>>,
     content: @Composable (
         destination: C,
         componentContext: ComponentContext,
         instance: DecomposeChildInstance<C>
     ) -> Unit
 ) = Children(
-    navController.stack as Value<ChildStack<C, T>>,
+    navController.stack,
     modifier,
     animation
 ) {
