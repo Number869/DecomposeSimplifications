@@ -5,13 +5,13 @@ import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.Children
-import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.StackAnimation
+import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.*
 
 @Composable
 fun <C : Any> DecomposeNavHost(
     navController: DecomposeNavController<C>,
     modifier: Modifier = Modifier,
-    animation: StackAnimation<C, DecomposeChildInstance<C>>,
+    animation: StackAnimation<C, DecomposeChildInstance<C>> = stackAnimation(scale() + fade()),
     content: @Composable (
         destination: C,
         componentContext: ComponentContext,
