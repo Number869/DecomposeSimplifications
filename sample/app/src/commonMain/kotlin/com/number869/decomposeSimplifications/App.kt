@@ -81,11 +81,14 @@ fun App(
 
                 // because it's a data class and not a data object
                 is Screen.Category1.Option1 -> {
+                    val vm = decomposeViewModel(Category1Option1ViewModel())
+
                     Box(
                         Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface),
                         contentAlignment = Alignment.Center
                     ) {
                         Text("Category 1 Option 1 ${destination.id}")
+                        Text("random uuid from vm that destroys itself after exit ${vm.randomUuid}")
                     }
                 }
 
@@ -145,7 +148,17 @@ sealed interface Screen {
 }
 
 class Category1DefaultViewModel() : DecomposeViewModel() {
-    var randomUuid = "randomUuid in view model is empty"
+    var randomUuid = "randomUuid in the view model is empty"
+
+    init {
+        viewModelScope.launch {
+            randomUuid = UUID.randomUUID().toString()
+        }
+    }
+}
+
+class Category1Option1ViewModel() : DecomposeViewModel() {
+    var randomUuid = "randomUuid in the view model is empty"
 
     init {
         viewModelScope.launch {
