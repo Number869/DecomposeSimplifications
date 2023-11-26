@@ -12,10 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.*
-import com.number869.decomposeSimplifications.core.common.DecomposeChildInstance
-import com.number869.decomposeSimplifications.core.common.DecomposeNavController
-import com.number869.decomposeSimplifications.core.common.DecomposeNavHost
-import com.number869.decomposeSimplifications.core.common.rememberDecomposeNavController
+import com.number869.decomposeSimplifications.core.common.*
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import java.util.*
 
@@ -56,15 +54,18 @@ fun App(
             navController,
             Modifier.padding(scaffoldPadding),
             animation = animation
-        ) { destination, _, _ ->
+        ) { destination, componentContext, instance ->
             when (destination) {
                 Screen.Category1.Default -> {
+                    val vm = decomposeViewModel(Category1DefaultViewModel())
+
                     Box(
                         Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface),
                         contentAlignment = Alignment.Center
                     ) {
                         Column {
                             Text("Category 1 Default")
+                            Text(vm.randomUuid)
 
                             Button(
                                 onClick = {
@@ -140,5 +141,15 @@ sealed interface Screen {
 
         @Serializable
         data class Option1(val id: String) : Category2
+    }
+}
+
+class Category1DefaultViewModel() : DecomposeViewModel() {
+    var randomUuid = "randomUuid in view model is empty"
+
+    init {
+        viewModelScope.launch {
+            randomUuid = UUID.randomUUID().toString()
+        }
     }
 }

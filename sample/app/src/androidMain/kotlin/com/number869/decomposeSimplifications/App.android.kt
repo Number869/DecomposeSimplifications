@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.defaultComponentContext
-import com.number869.decomposeSimplifications.core.common.rememberDecomposeNavController
+import com.number869.decomposeSimplifications.core.common.decomposeNavController
 import com.number869.decomposeSimplifications.optionalExtensions.android.materialPredictiveBackAnimation
 
 class AppActivity : ComponentActivity() {
@@ -14,13 +14,13 @@ class AppActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContent {
-            val navController = rememberDecomposeNavController(
-                startingDestination = Screen.Category1.Default,
-                defaultComponentContext(),
-                serializer = Screen.serializer()
-            )
+        val navController = decomposeNavController(
+            startingDestination = Screen.Category1.Default,
+            defaultComponentContext(),
+            serializer = Screen.serializer()
+        )
 
+        setContent {
             enableEdgeToEdge()
 
             App(
