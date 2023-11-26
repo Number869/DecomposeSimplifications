@@ -1,16 +1,18 @@
+package com.number869.decomposeSimplifications.core.common
+
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.extensions.compose.jetbrains.stack.Children
-import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.StackAnimation
+import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.*
 
 @Composable
 fun <C : Any> DecomposeNavHost(
     navController: DecomposeNavController<C>,
     modifier: Modifier = Modifier,
-    animation: StackAnimation<C, DecomposeChildInstance<C>>,
-    content: @Composable (
+    animation: StackAnimation<C, DecomposeChildInstance<C>> = stackAnimation(scale() + fade()),
+    content: @Composable ComponentContext.(
         destination: C,
         componentContext: ComponentContext,
         instance: DecomposeChildInstance<C>
@@ -22,9 +24,11 @@ fun <C : Any> DecomposeNavHost(
 ) {
     val childWithCorrectType = it as? Child.Created<C, DecomposeChildInstance<C>>
 
-    content(
-        childWithCorrectType!!.instance.config,
-        childWithCorrectType.instance.componentContext,
-        childWithCorrectType.instance
-    )
+    with(childWithCorrectType!!.instance.componentContext) {
+        content(
+            childWithCorrectType.instance.config,
+            childWithCorrectType.instance.componentContext,
+            childWithCorrectType.instance
+        )
+    }
 }

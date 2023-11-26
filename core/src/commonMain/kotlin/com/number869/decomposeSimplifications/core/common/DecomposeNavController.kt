@@ -1,3 +1,5 @@
+package com.number869.decomposeSimplifications.core.common
+
 import androidx.compose.runtime.*
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.DefaultComponentContext
@@ -10,8 +12,11 @@ import java.io.File
 import java.io.ObjectInputStream
 
 /**
+ * It's recommended to use decomposeNavController instead.
  * Pass the component context on android pls :3
+ * @see decomposeNavController
  */
+@Deprecated("It's recommended to use decomposeNavController instead to avoid issues with saved state handling")
 @Composable
 fun <C : Any> rememberDecomposeNavController(
     startingDestination: C,
@@ -28,6 +33,10 @@ fun <C : Any> rememberDecomposeNavController(
     )
 }
 
+/**
+ * Initialize this outside of setContent in the activity and then just pass it down inside
+ * your nav host and everywhere else. Pass the component context on android pls :3
+ */
 fun <C : Any> decomposeNavController(
     startingDestination: C,
     componentContext: DefaultComponentContext? = null,
@@ -62,17 +71,17 @@ class DecomposeNavController<C : Any>(
 
     fun onBackClicked(toIndex: Int) {
         navigation.popTo(index = toIndex)
-        _currentDestination = stack.items.last().configuration
+        _currentDestination = stack.items[toIndex].configuration
     }
 
     fun navigate(targetDestination: C) {
         navigation.bringToFront(targetDestination)
-        _currentDestination = stack.items.last().configuration
+        _currentDestination = targetDestination
     }
 
     fun pop(onComplete: (isSuccess: Boolean) -> Unit = {}) {
+        _currentDestination = stack.items[stack.items.lastIndex - 1].configuration
         navigation.pop(onComplete)
-        _currentDestination = stack.items.last().configuration
     }
 }
 
