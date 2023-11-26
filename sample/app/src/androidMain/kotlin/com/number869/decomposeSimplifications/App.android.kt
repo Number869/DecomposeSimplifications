@@ -8,6 +8,7 @@ import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.defaultComponentContext
 import com.number869.decomposeSimplifications.core.common.decomposeNavController
 import com.number869.decomposeSimplifications.optionalExtensions.android.materialPredictiveBackAnimation
+import com.number869.decomposeSimplifications.ui.navigation.Screen
 
 class AppActivity : ComponentActivity() {
     @OptIn(ExperimentalDecomposeApi::class)
