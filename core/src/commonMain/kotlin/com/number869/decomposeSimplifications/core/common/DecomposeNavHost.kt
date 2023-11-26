@@ -12,7 +12,7 @@ fun <C : Any> DecomposeNavHost(
     navController: DecomposeNavController<C>,
     modifier: Modifier = Modifier,
     animation: StackAnimation<C, DecomposeChildInstance<C>> = stackAnimation(scale() + fade()),
-    content: @Composable (
+    content: @Composable ComponentContext.(
         destination: C,
         componentContext: ComponentContext,
         instance: DecomposeChildInstance<C>
@@ -24,9 +24,11 @@ fun <C : Any> DecomposeNavHost(
 ) {
     val childWithCorrectType = it as? Child.Created<C, DecomposeChildInstance<C>>
 
-    content(
-        childWithCorrectType!!.instance.config,
-        childWithCorrectType.instance.componentContext,
-        childWithCorrectType.instance
-    )
+    with(childWithCorrectType!!.instance.componentContext) {
+        content(
+            childWithCorrectType.instance.config,
+            childWithCorrectType.instance.componentContext,
+            childWithCorrectType.instance
+        )
+    }
 }
