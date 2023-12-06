@@ -52,7 +52,7 @@ fun <C : Any> decomposeNavController(
 
 
 class DecomposeNavController<C : Any>(
-    componentContext: DefaultComponentContext,
+    val componentContext: DefaultComponentContext,
     startingDestination: C,
     serializer: KSerializer<C>?
 ) : ComponentContext by componentContext {
