@@ -6,33 +6,23 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.*
-import com.number869.decomposeSimplifications.core.common.DecomposeChildInstance
 import com.number869.decomposeSimplifications.core.common.DecomposeNavController
-import com.number869.decomposeSimplifications.core.common.rememberDecomposeNavController
 import com.number869.decomposeSimplifications.ui.navigation.Screen
 import com.number869.decomposeSimplifications.ui.navigation.ScreenNavigator
+import org.koin.compose.getKoin
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun App(
-    navController: DecomposeNavController<Screen> = rememberDecomposeNavController(
-        startingDestination = Screen.Category1.Default,
-        serializer = Screen.serializer()
-    ),
-    animation: StackAnimation<Screen, DecomposeChildInstance<Screen>> = stackAnimation(fade() + scale())
-) {
+fun App() {
+    val navController = getKoin().get<DecomposeNavController<Screen>>()
+
     MaterialTheme {
         Scaffold(
             topBar = { CenterAlignedTopAppBar(title = { Text("Decompose Simplifications") }) },
             bottomBar = { SampleNavBar(navController) }
         ) { scaffoldPadding ->
-            ScreenNavigator(
-                Modifier.padding(scaffoldPadding),
-                navController,
-                animation
-            )
+            ScreenNavigator(Modifier.padding(scaffoldPadding))
         }
     }
 }
