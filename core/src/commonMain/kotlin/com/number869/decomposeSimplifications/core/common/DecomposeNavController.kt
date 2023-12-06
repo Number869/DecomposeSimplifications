@@ -71,17 +71,17 @@ class DecomposeNavController<C : Any>(
 
     fun onBackClicked(toIndex: Int) {
         navigation.popTo(index = toIndex)
-        _currentDestination = stack.items[toIndex].configuration
+        _currentDestination = stack.active.configuration
     }
 
     fun navigate(targetDestination: C) {
         navigation.bringToFront(targetDestination)
-        _currentDestination = targetDestination
+        _currentDestination = stack.active.configuration
     }
 
     fun pop(onComplete: (isSuccess: Boolean) -> Unit = {}) {
-        _currentDestination = stack.items[stack.items.lastIndex - 1].configuration
         navigation.pop(onComplete)
+        _currentDestination = stack.active.configuration
     }
 }
 
