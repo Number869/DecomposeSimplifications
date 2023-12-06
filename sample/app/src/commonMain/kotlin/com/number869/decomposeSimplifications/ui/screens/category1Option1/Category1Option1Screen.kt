@@ -8,9 +8,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.number869.decomposeSimplifications.core.common.decomposeViewModel
 
 @Composable
-fun Category1Option1Screen(id: String, vm: Category1Option1ViewModel) {
+fun Category1Option1Screen(id: String) {
+    val vm = decomposeViewModel(Category1Option1ViewModel())
     Column(
         Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface),
         verticalArrangement = Arrangement.Center

@@ -11,14 +11,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.number869.decomposeSimplifications.core.common.DecomposeNavController
+import com.number869.decomposeSimplifications.core.common.decomposeViewModel
 import com.number869.decomposeSimplifications.ui.navigation.Screen
 import java.util.*
 
 @Composable
 fun Category1DefaultScreen(
-    vm: Category1DefaultViewModel,
     navController: DecomposeNavController<Screen>,
 ) {
+    val vm = decomposeViewModel(Category1DefaultViewModel())
     Box(
         Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface),
         contentAlignment = Alignment.Center
