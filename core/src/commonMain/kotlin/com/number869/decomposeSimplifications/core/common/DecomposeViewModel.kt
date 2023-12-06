@@ -1,6 +1,7 @@
 package com.number869.decomposeSimplifications.core.common
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.essenty.instancekeeper.InstanceKeeper
 import com.arkivanov.essenty.instancekeeper.getOrCreate
@@ -24,10 +25,12 @@ inline fun <reified T: DecomposeViewModel> decomposeViewModel(
     componentContext: ComponentContext = checkNotNull(LocalDecomposeComponentContext.current) {
         "No ComponentContext was provided via LocalDecomposeComponentContext"
     }
-) = if (key == null) {
-    componentContext.instanceKeeper.getOrCreate { viewModel }
-} else {
-    componentContext.instanceKeeper.getOrCreate(key) { viewModel }
+) = remember {
+    if (key == null) {
+        componentContext.instanceKeeper.getOrCreate { viewModel }
+    } else {
+        componentContext.instanceKeeper.getOrCreate(key) { viewModel }
+    }
 }
 
 /**
