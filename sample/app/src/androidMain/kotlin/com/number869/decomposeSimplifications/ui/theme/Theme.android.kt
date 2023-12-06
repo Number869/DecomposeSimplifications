@@ -1,4 +1,4 @@
-package com.number869.decomposeSimplifications.theme
+package com.number869.decomposeSimplifications.ui.theme
 
 import android.app.Activity
 import android.os.Build
