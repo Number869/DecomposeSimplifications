@@ -37,6 +37,7 @@ inline fun <reified T: DecomposeViewModel> decomposeViewModel(
  * Basic view model that is similar to the one that's offered by google for android
  */
 open class DecomposeViewModel : InstanceKeeper.Instance {
+
     val viewModelScope: CoroutineScope
         get() = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 }
