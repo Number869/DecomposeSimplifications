@@ -33,6 +33,7 @@ kotlin {
                 implementation(compose.material)
                 implementation(libs.decompose)
                 implementation(libs.decompose.extensions)
+                implementation(libs.kotlinx.coroutines.swing)
             }
         }
         val androidMain by getting {

@@ -12,14 +12,16 @@ import java.awt.Dimension
 
 fun main() = application {
     startKoin {
-        module {
-            single<DecomposeNavController<Screen>> {
-                decomposeNavController(
-                    startingDestination = Screen.Category1.Default,
-                    serializer = Screen.serializer()
-                )
+        modules(
+            module {
+                single<DecomposeNavController<Screen>> {
+                    decomposeNavController(
+                        startingDestination = Screen.Category1.Default,
+                        serializer = Screen.serializer()
+                    )
+                }
             }
-        }
+        )
     }
 
     Window(
