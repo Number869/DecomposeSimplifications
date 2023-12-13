@@ -1,13 +1,13 @@
 [versions]
-kotlin = "1.9.20"
+kotlin = "1.9.21"
 agp = "8.1.1"
-compose = "1.5.10"
+compose = "1.5.11"
 androidx-appcompat = "1.6.1"
 androidx-activityCompose = "1.7.2"
 compose-uitooling = "1.5.1"
 kotlinx-coroutines = "1.7.3"
-kotlinx-serialization = "1.6.0"
-decompose = "2.2.0-beta02"
+kotlinx-serialization = "1.6.2"
+decompose = "3.0.0-alpha02"
 maven-publish = "0.25.3"
 dokka = "1.9.0"
 
@@ -20,7 +20,7 @@ kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 decompose = { group = "com.arkivanov.decompose", name = "decompose", version.ref = "decompose" }
-decompose-extensions = { group = "com.arkivanov.decompose", name = "extensions-compose-jetbrains", version.ref = "decompose" }
+decompose-extensions = { group = "com.arkivanov.decompose", name = "extensions-compose", version.ref = "decompose" }
 koin-core = { group = "io.insert-koin", name = "koin-core", version = "3.5.0" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version = "3.5.0" }
 koin-compose = { group = "io.insert-koin", name = "koin-compose", version = "1.1.0" }
