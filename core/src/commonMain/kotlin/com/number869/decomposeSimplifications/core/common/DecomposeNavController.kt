@@ -5,16 +5,12 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.router.stack.*
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
-import com.arkivanov.essenty.parcelable.ParcelableContainer
 import com.arkivanov.essenty.statekeeper.StateKeeperDispatcher
 import kotlinx.serialization.KSerializer
-import java.io.File
-import java.io.ObjectInputStream
 
 /**
- * It's recommended to use decomposeNavController instead.
+ * It's recommended to use [decomposeNavController] instead.
  * Pass the component context on android pls :3
- * @see decomposeNavController
  */
 @Deprecated("It's recommended to use decomposeNavController instead to avoid issues with saved state handling")
 @Composable
@@ -86,15 +82,3 @@ class DecomposeNavController<C : Any>(
 }
 
 class DecomposeChildInstance<C>(val config: C, val componentContext: ComponentContext)
-
-private fun tryRestoreStateFromFile(): ParcelableContainer? {
-    return File("states.dat").takeIf(File::exists)?.let { file ->
-        try {
-            ObjectInputStream(file.inputStream()).use(ObjectInputStream::readObject) as ParcelableContainer
-        } catch (e: Exception) {
-            null
-        } finally {
-            file.delete()
-        }
-    }
-}

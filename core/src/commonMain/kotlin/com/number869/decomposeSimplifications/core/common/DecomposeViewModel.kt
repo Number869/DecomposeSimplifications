@@ -9,6 +9,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 
+
+/**
+ * Android-like view model instancer. Will get or create a view model instance in the [InstanceKeeper]
+ * from Essenty. Provide [key] if you have multiple instances of the same view model
+ * else it will get the first created one.
+ *
+ * Note: this is not composable therefore this is not remembered, so wrap this into
+ * remember if you're using this inside a composable function to avoid [getOrCreate]
+ * being called on each recomposition of the parent.
+ */
 inline fun <reified T: DecomposeViewModel> ComponentContext.decomposeViewModel(
     viewModel: T,
     key: Any? = null
@@ -18,6 +28,11 @@ inline fun <reified T: DecomposeViewModel> ComponentContext.decomposeViewModel(
     this.instanceKeeper.getOrCreate(key) { viewModel }
 }
 
+/**
+ * Android-like view model instancer. Will get or create a view model instance in the [InstanceKeeper]
+ * from Essenty. Provide [key] if you have multiple instances of the same view model
+ * else it will get the first created one.
+ */
 @Composable
 inline fun <reified T: DecomposeViewModel> decomposeViewModel(
     viewModel: T,
@@ -34,7 +49,7 @@ inline fun <reified T: DecomposeViewModel> decomposeViewModel(
 }
 
 /**
- * Basic view model that is similar to the one that's offered by google for android
+ * Basic view model that is similar to the one that's offered by google for android.
  */
 open class DecomposeViewModel : InstanceKeeper.Instance {
 

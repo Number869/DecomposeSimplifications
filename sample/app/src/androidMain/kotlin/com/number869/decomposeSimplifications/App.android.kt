@@ -6,10 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.defaultComponentContext
-import com.number869.decomposeSimplifications.core.common.DecomposeNavController
-import com.number869.decomposeSimplifications.core.common.decomposeNavController
-import com.number869.decomposeSimplifications.ui.navigation.Screen
-import org.koin.core.context.startKoin
+import com.number869.decomposeSimplifications.core.common.decomposeNavControllerFlex
+import org.koin.core.context.GlobalContext
 import org.koin.dsl.module
 
 class AppActivity : ComponentActivity() {
@@ -17,19 +15,12 @@ class AppActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        startKoin {
-            modules(
-                module {
-                    single<DecomposeNavController<Screen>> {
-                        decomposeNavController(
-                            startingDestination = Screen.Category1.Default,
-                            defaultComponentContext(),
-                            serializer = Screen.serializer()
-                        )
-                    }
-                }
-            )
-        }
+        GlobalContext.loadKoinModules(
+            module {
+                single { decomposeNavControllerFlex(defaultComponentContext()) }
+            }
+        )
+
         setContent {
             enableEdgeToEdge()
 

@@ -10,12 +10,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.number869.decomposeSimplifications.core.common.DecomposeNavController
-import com.number869.decomposeSimplifications.ui.navigation.Screen
+import com.number869.decomposeSimplifications.core.common.DecomposeNavControllerFlex
+import com.number869.decomposeSimplifications.ui.navigation.Screens
+import com.number869.decomposeSimplifications.ui.screens.category2option1.Category2Option1Screen
 import java.util.*
 
 @Composable
-fun Category2DefaultScreen(navController: DecomposeNavController<Screen>) {
+fun Category2DefaultScreen(navController: DecomposeNavControllerFlex) {
     Box(
         Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface),
         contentAlignment = Alignment.Center
@@ -25,8 +26,10 @@ fun Category2DefaultScreen(navController: DecomposeNavController<Screen>) {
 
             Button(
                 onClick = {
-                    val random = UUID.randomUUID().toString()
-                    navController.navigate(Screen.Category2.Option1(id = random))
+                    val randomId = UUID.randomUUID().toString()
+                    navController.openAsScreen("${Screens.Category2.Option1.destinationName}$randomId") {
+                        Category2Option1Screen(randomId)
+                    }
                 }
             ) {
                 Text("Navigate to Option 1")

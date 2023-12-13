@@ -24,14 +24,19 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.ExperimentalDecomposeApi
-import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.*
-import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.predictiveback.PredictiveBackAnimatable
-import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.predictiveback.predictiveBackAnimation
+import com.arkivanov.decompose.extensions.compose.stack.animation.*
+import com.arkivanov.decompose.extensions.compose.stack.animation.predictiveback.PredictiveBackAnimatable
+import com.arkivanov.decompose.extensions.compose.stack.animation.predictiveback.predictiveBackAnimation
 import com.arkivanov.essenty.backhandler.BackEvent
 import com.arkivanov.essenty.backhandler.BackHandler
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
+@Deprecated("Use Decompose's default predictive back animation", ReplaceWith(
+    "predictiveBackAnimation(backHandler, onBack)",
+    "import com.arkivanov.decompose.extensions.compose.stack.animation.predictiveback.predictiveBackAnimation\n"
+)
+)
 @OptIn(ExperimentalDecomposeApi::class)
 fun <C : Any, T : Any> materialPredictiveBackAnimation(
     backHandler: BackHandler,

@@ -4,9 +4,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.decompose.extensions.compose.jetbrains.stack.Children
-import com.arkivanov.decompose.extensions.compose.jetbrains.stack.animation.*
+import com.arkivanov.decompose.extensions.compose.stack.Children
+import com.arkivanov.decompose.extensions.compose.stack.animation.*
 
+/**
+ * Basic nav host. Provides the child's [ComponentContext] using [CompositionLocalProvider],
+ * so in your screens you can retrieve it easily by calling [LocalDecomposeComponentContext].currentю
+ * [LocalDecomposeComponentContext] is also used for [decomposeViewModel] usage
+ * inside the screens *by default*.
+ */
 @Composable
 fun <C : Any> DecomposeNavHost(
     navController: DecomposeNavController<C>,
