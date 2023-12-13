@@ -34,10 +34,10 @@ fun DecomposeNavHostFlex(
 
     Box {
         // not overlay
-        content.invoke {
+        content.invoke { nonOverlayModifier ->
             Children(
                 navController.screenStack,
-                modifier,
+                nonOverlayModifier,
                 nonOverlayDefaultAnimation
             ) {
                 CompositionLocalProvider(
