@@ -3,6 +3,7 @@ package com.number869.decomposeSimplifications.core.common
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.stack.Children
@@ -23,6 +24,9 @@ fun DecomposeNavHostFlex(
         onBack = navController::navigateBack
     ),
     overlayDefaultAnimation: StackAnimation<String, DecomposeChildInstanceFlex> = OverlayStackNavigationAnimation { child ->
+        navController.animationsForDestinations[child.configuration]
+    },
+    snackDefaultAnimation: StackAnimation<String, DecomposeChildInstanceFlex> = OverlayStackNavigationAnimation { child ->
         navController.animationsForDestinations[child.configuration]
     },
     startingPoint: StartingDestination,
@@ -54,6 +58,19 @@ fun DecomposeNavHostFlex(
                 LocalDecomposeComponentContext provides it.instance.componentContext
             ) {
                 navController.contentOfOverlays[it.configuration]?.invoke()
+            }
+        }
+
+        // overlay, but snacks
+        Children(navController.snackStack, animation = snackDefaultAnimation) {
+            CompositionLocalProvider(
+                LocalDecomposeComponentContext provides it.instance.componentContext
+            ) {
+                navController.contentOfSnacks[it.configuration]?.invoke()
+
+                DisposableEffect(it) {
+                    onDispose { navController.removeSnackContents(it.configuration) }
+                }
             }
         }
     }
