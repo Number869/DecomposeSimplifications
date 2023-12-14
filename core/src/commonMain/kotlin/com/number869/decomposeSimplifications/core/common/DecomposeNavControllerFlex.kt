@@ -128,6 +128,17 @@ class DecomposeNavControllerFlex(
             screenNavigation.popTo(screenStack.items.indexOfLast { it.configuration == key })
     }
 
+    fun closeScreen(key: String, onComplete: (isSuccess: Boolean) -> Unit = { }) {
+        val stackWithoutThisKeyAsArrayOfKeys = screenStack.backStack
+            .filterNot { it.configuration == key }
+            .map { it.configuration }
+            .toTypedArray()
+
+        screenNavigation.replaceAll(*stackWithoutThisKeyAsArrayOfKeys) {
+            onComplete(true)
+        }
+    }
+
     fun openInOverlay(
         key: String,
         animation: StackAnimator? = fade(tween(200)),
@@ -139,6 +150,17 @@ class DecomposeNavControllerFlex(
 
         // navigate
         overlayNavigation.push(key)
+    }
+
+    fun closeOverlay(key: String, onComplete: (isSuccess: Boolean) -> Unit = { }) {
+        val stackWithoutThisKeyAsArrayOfKeys = overlayStack.backStack
+            .filterNot { it.configuration == key }
+            .map { it.configuration }
+            .toTypedArray()
+
+        overlayNavigation.replaceAll(*stackWithoutThisKeyAsArrayOfKeys) {
+            onComplete(true)
+        }
     }
 
     fun openInSnack(
@@ -169,7 +191,7 @@ class DecomposeNavControllerFlex(
         animationsForDestinations.remove(key)
     }
 
-    fun closeSnack(key: String, onComplete: (isSuccess: Boolean) -> Unit = {}) {
+    fun closeSnack(key: String, onComplete: (isSuccess: Boolean) -> Unit = { }) {
         val stackWithoutThisKeyAsArrayOfKeys = snackStack.backStack
             .filterNot { it.configuration == key }
             .map { it.configuration }
@@ -180,7 +202,7 @@ class DecomposeNavControllerFlex(
         }
     }
 
-    fun navigateBack(onComplete: (isSuccess: Boolean) -> Unit = {}) {
+    fun navigateBack(onComplete: (isSuccess: Boolean) -> Unit = { }) {
         var thingToRemove: String? = ""
         if (overlayStack.active.configuration == "empty") {
             thingToRemove = screenStack.active.configuration
