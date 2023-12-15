@@ -16,7 +16,7 @@ Suggestions are welcome. To make one - head over to the issues tab and describe 
 - An example of the hypothetical feature inside the code (with context)
 - (Optional) How do you see it being implemented inside the library
 
-Features that *"solve potential problems i might encounter in the future*" are not taken into consideration. 
+Features that *"solve potential problems i might encounter in the future*" are not likely to be taken into consideration. 
 
 # PRs
 
