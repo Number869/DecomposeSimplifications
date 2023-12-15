@@ -1,30 +1,25 @@
 package com.number869.decomposeSimplifications.ui.screens.category1Option1
 
-import androidx.compose.animation.core.animate
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.arkivanov.essenty.backhandler.BackCallback
+import com.number869.decomposeSimplifications.common.BasicBottomSheet
 import com.number869.decomposeSimplifications.core.common.DecomposeNavControllerFlex
-import com.number869.decomposeSimplifications.core.common.LocalDecomposeComponentContext
 import com.number869.decomposeSimplifications.core.common.decomposeViewModel
 import com.number869.decomposeSimplifications.ui.navigation.Screens
 import com.number869.decomposeSimplifications.ui.screens.category2default.Category2DefaultScreen
-import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun Category1Option1Screen(id: String, navController: DecomposeNavControllerFlex) {
     val vm = decomposeViewModel(Category1Option1ViewModel())
@@ -46,9 +41,13 @@ fun Category1Option1Screen(id: String, navController: DecomposeNavControllerFlex
 
         FilledTonalButton(
             onClick = {
+                val meowDestinationKey = "meoooow"
+
                 // bottom sheets don't need fade animation (that's set by default)
-                navController.openInOverlay(key = "meoooow", animation = null) {
-                    MeowBottomsheet(navController)
+                navController.openInOverlay(key = meowDestinationKey, animation = null) {
+                    BasicBottomSheet(
+                        onDismiss = { navController.closeOverlay(meowDestinationKey) }
+                    ) { MeowBottomsheetContent(navController) }
                 }
             }
         ) {
@@ -57,79 +56,72 @@ fun Category1Option1Screen(id: String, navController: DecomposeNavControllerFlex
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MeowBottomsheet(navController: DecomposeNavControllerFlex) {
-    val density = LocalDensity.current.density
-    val coroutineScope = rememberCoroutineScope()
-    val initialOffset = 900f * density
-    var verticalOffset by remember { mutableStateOf(initialOffset) }
-    var gestureBeginningOffset by remember { mutableStateOf(0f) }
-
-    val draggableState = rememberDraggableState { verticalOffset += it  }
-
-    val componentContext = LocalDecomposeComponentContext.current
-    componentContext.backHandler.register(
-        BackCallback {
-            coroutineScope.launch {
-                animate(verticalOffset, initialOffset) { value, _ ->
-                    verticalOffset = value
-                }
-                navController.navigateBack()
-            }
-        }
-    )
-
-    Box(
+fun MeowBottomsheetContent(navController: DecomposeNavControllerFlex) {
+    Column(
         Modifier
-            .graphicsLayer { alpha = 1f - (verticalOffset / initialOffset).coerceIn(0f, 1f)  }
-            .fillMaxSize()
-            .background(Color.Black.copy(0.25f))
-    )
+            .clip(RoundedCornerShape(28.dp, 28.dp, 0.dp, 0.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Box(Modifier.fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(
+                    top = 36.dp, // padding for the handle pill
+                )
+            ) {
+                repeat(6) {
+                    item {
+                        Column(
+                            Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            if (it != 0) Spacer(Modifier.height(64.dp))
 
-    Box(
-        Modifier
-            .draggable(
-                draggableState,
-                Orientation.Vertical,
-                onDragStarted = { gestureBeginningOffset = it.y },
-                onDragStopped = { gestureVelocity ->
-                    // if upwards
-                    if (gestureVelocity < 500f) {
-                        animate(verticalOffset, 100f, gestureVelocity) { value, _ ->
-                            verticalOffset = value
-                        }
-                    // if downwards
-                    } else if (gestureVelocity > 500f) {
-                        animate(verticalOffset, initialOffset, gestureVelocity) { value, _ ->
-                            verticalOffset = value
-                        }
-                        navController.navigateBack()
-                    } else {
-                        animate(verticalOffset, gestureBeginningOffset, gestureVelocity) { value, _ ->
-                            verticalOffset = value
+                            Text(
+                                "BasicBottomSheet example",
+                                style = MaterialTheme.typography.headlineSmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                            Text(
+                                "from optional-extensions artifact",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                            Spacer(Modifier.height(32.dp))
+
+                            Button(
+                                onClick = {
+                                    navController.openInOverlay("meow dialog") { MeowDialog(navController) }
+                                }
+                            ) {
+                                Text("Open a dialog")
+                            }
                         }
                     }
                 }
-            )
-            .graphicsLayer { translationY = verticalOffset }
-            .shadow(4.dp)
-            .height(900.dp)
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Button(
-            modifier = Modifier.align(Alignment.Center),
-            onClick = {
-                navController.openInOverlay("meow dialog") { MeowDialog(navController) }
-            }
-        ) {
-            Text("Open a dialog")
-        }
-    }
 
-    LaunchedEffect(null) {
-        animate(verticalOffset, 600f) { value, velocity ->
-            verticalOffset = value
+                item {
+                    // system bars padding because both status bar and nav bar paddings
+                    // are needed because the sheet size is equal to the window size while
+                    // also not being displayed under the status bar
+                    Spacer(Modifier.systemBarsPadding())
+                }
+            }
+
+            // the pill/handle
+            Box(
+                Modifier
+                    .padding(16.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.onSurfaceVariant)
+                    .width(38.dp)
+                    .height(4.dp)
+                    .align(Alignment.TopCenter)
+            )
         }
     }
 }
