@@ -82,13 +82,11 @@ fun MeowBottomsheetContent(navController: DecomposeNavControllerFlex) {
                             Text(
                                 "BasicBottomSheet example",
                                 style = MaterialTheme.typography.headlineSmall,
-                                color = MaterialTheme.colorScheme.onSurface
                             )
 
                             Text(
                                 "from optional-extensions artifact",
                                 style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.onSurface
                             )
 
                             Spacer(Modifier.height(32.dp))

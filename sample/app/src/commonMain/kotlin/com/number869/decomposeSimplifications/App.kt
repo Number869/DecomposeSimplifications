@@ -23,19 +23,22 @@ fun App() {
     val navController = getKoin().get<DecomposeNavControllerFlex>()
 
     SampleTheme {
-        DecomposeNavHostFlex(
-            navController,
-            startingPoint = StartingDestination(Screens.Category1.Default.destinationName) {
-                Category1DefaultScreen(navController)
-            }
-        ) { nonOverlayContent ->
-            Scaffold(
-                topBar = { CenterAlignedTopAppBar(title = { Text("Decompose Simplifications") }) },
-                bottomBar = { SampleNavBar(navController) }
-            ) { scaffoldPadding ->
-                nonOverlayContent(modifier = Modifier.padding(scaffoldPadding))
+        Surface {
+            DecomposeNavHostFlex(
+                navController,
+                startingPoint = StartingDestination(Screens.Category1.Default.destinationName) {
+                    Category1DefaultScreen(navController)
+                }
+            ) { nonOverlayContent ->
+                Scaffold(
+                    topBar = { CenterAlignedTopAppBar(title = { Text("Decompose Simplifications") }) },
+                    bottomBar = { SampleNavBar(navController) }
+                ) { scaffoldPadding ->
+                    nonOverlayContent(modifier = Modifier.padding(scaffoldPadding))
+                }
             }
         }
+
     }
 }
 
