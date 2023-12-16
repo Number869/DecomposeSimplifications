@@ -1,6 +1,8 @@
 package com.number869.decomposeSimplifications.core.common
 
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
@@ -146,7 +148,12 @@ class DecomposeNavControllerFlex(
     ) {
         // remember data about content
         animation?.let { animationsForDestinations[key] = it }
-        contentOfOverlays[key] = { Box(content = content, modifier = Modifier.fillMaxSize()) }
+        contentOfOverlays[key] = {
+            Box(
+                modifier = Modifier.fillMaxSize().disallowClicksUnderThis(),
+                content = content
+            )
+        }
 
         // navigate
         overlayNavigation.push(key)
@@ -239,3 +246,9 @@ private data class ScreensInstanceHolder<T>(val data: T) : InstanceKeeper.Instan
 private data class OverlaysInstanceHolder<T>(val data: T) : InstanceKeeper.Instance
 private data class SnacksInstanceHolder<T>(val data: T) : InstanceKeeper.Instance
 private data class AnimationsInstanceHolder<T>(val data: T) : InstanceKeeper.Instance
+
+private fun Modifier.disallowClicksUnderThis() = this.clickable(
+    indication = null,
+    interactionSource = MutableInteractionSource(),
+    onClick = { }
+)
