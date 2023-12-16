@@ -48,14 +48,20 @@ fun BasicBottomSheet(
             coroutineScope.launch {
                 animate(currentOffset, targetOffset, velocity ?: 0f) { value, _ ->
                     currentOffset = value
-                    if (value >= screenSize.height) { onEnd() }
+
+                    if (value >= screenSize.height) onEnd()
                 }
             }
         }
 
         fun close() = animateSheetOffset(
             screenSize.height,
-            onEnd = { onDismiss(); dismissalWasRequested = true }
+            onEnd = {
+                if (!dismissalWasRequested) {
+                    onDismiss()
+                    dismissalWasRequested = true
+                }
+            }
         )
 
         LaunchedEffect(null) { animateSheetOffset(initialOffset) }
