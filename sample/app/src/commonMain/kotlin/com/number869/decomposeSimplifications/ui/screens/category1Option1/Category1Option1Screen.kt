@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -21,8 +22,19 @@ import com.number869.decomposeSimplifications.ui.screens.category2default.Catego
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun Category1Option1Screen(id: String, navController: DecomposeNavControllerFlex) {
+fun Category1Option1Screen(
+    id: String,
+    navController: DecomposeNavControllerFlex,
+    isOverlay: Boolean = false
+) {
     val vm = decomposeViewModel(Category1Option1ViewModel())
+
+    LaunchedEffect(null) {
+        if (isOverlay) {
+            navController.openInSnack("toast sample") { ToastMessageUi() }
+        }
+    }
+
     Column(
         Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface),
         verticalArrangement = Arrangement.Center
@@ -135,4 +147,23 @@ fun MeowDialog(navController: DecomposeNavControllerFlex) {
             }
         }
     )
+}
+
+@Composable
+fun BoxScope.ToastMessageUi() {
+    Box(
+        Modifier
+            .align(Alignment.BottomCenter)
+            .padding(64.dp)
+            .clip(CircleShape)
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.primaryContainer),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            "This was opened in an overlay",
+            Modifier.padding(vertical = 16.dp),
+            style = MaterialTheme.typography.titleSmall
+        )
+    }
 }

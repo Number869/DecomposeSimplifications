@@ -30,7 +30,7 @@ fun Category1DefaultScreen(navController: DecomposeNavControllerFlex, ) {
                     val randomId = UUID.randomUUID().toString()
                     navController.openInOverlay(
                         "${Screens.Category1.Option1}$randomId"
-                    ) { Category1Option1Screen(randomId, navController) }
+                    ) { Category1Option1Screen(randomId, navController, isOverlay = true) }
                 }
             ) {
                 Text("Navigate to Option 1")
