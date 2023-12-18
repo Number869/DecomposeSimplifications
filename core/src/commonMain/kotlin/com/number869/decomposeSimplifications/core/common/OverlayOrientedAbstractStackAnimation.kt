@@ -12,7 +12,7 @@ import com.arkivanov.decompose.router.stack.ChildStack
 internal abstract class OverlayOrientedAbstractStackAnimation<C : Any, T : Any>(
     private val disableInputDuringAnimation: Boolean,
 ) : StackAnimation<C, T> {
-    private val items = mutableStateMapOf<C, AnimationItem<C, T>>()
+    private val items = linkedMapOf<C, AnimationItem<C, T>>()
 
     @Composable
     protected abstract fun Child(
