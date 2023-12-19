@@ -1,4 +1,4 @@
-package com.number869.decomposeSimplifications.core.common
+package com.number869.decomposeSimplifications.core.common.ultils
 
 import androidx.compose.runtime.compositionLocalOf
 import com.arkivanov.decompose.ComponentContext

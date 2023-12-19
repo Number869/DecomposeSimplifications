@@ -1,27 +1,34 @@
 package com.number869.decomposeSimplifications.ui.navigation
 
-sealed interface Screens {
-    sealed class Category1() {
-        val destinationName = "$categoryName$this"
-        data object Default : Category1()
-        data object Option1 : Category1()
-        companion object {
-            /**
-             * This is only used for tracking for selected parameters in navigation items in the
-             * navigation bar
-             */
-            const val categoryName: String = "Category1"
-        }
+import kotlinx.serialization.Serializable
+
+@Serializable
+sealed interface Destinations {
+    @Serializable
+    data object Empty : Destinations
+    @Serializable
+    sealed interface Category1 : Destinations {
+        @Serializable
+        data object Default : Category1
+
+        @Serializable
+        data class Option1(val id: String) : Category1
     }
 
-    sealed class Category2() {
-        // category name + destination name, i.e. "Category2Default"
-        val destinationName = "$categoryName$this"
-        data object Default : Category2()
-        data object Option1 : Category2()
+    @Serializable
+    sealed interface Category2 : Destinations {
+        @Serializable
+        data object Default : Category2
 
-        companion object {
-            const val categoryName: String = "Category2"
-        }
+        @Serializable
+        data class Option1(val id: String) : Category2
+    }
+
+    @Serializable
+    sealed interface Overlay : Destinations {
+        @Serializable
+        data object ExampleBottomSheet : Overlay
+        data object Category1Dialog : Overlay
+        data object DialogFromBottomSheet : Overlay
     }
 }

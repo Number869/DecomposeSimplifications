@@ -1,4 +1,4 @@
-package com.number869.decomposeSimplifications.core.common
+package com.number869.decomposeSimplifications.core.common.navigation.standard
 
 import androidx.compose.runtime.*
 import com.arkivanov.decompose.ComponentContext
@@ -6,6 +6,7 @@ import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.router.stack.*
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.statekeeper.StateKeeperDispatcher
+import com.number869.decomposeSimplifications.core.common.ultils.tryRestoreStateFromFile
 import kotlinx.serialization.KSerializer
 
 /**

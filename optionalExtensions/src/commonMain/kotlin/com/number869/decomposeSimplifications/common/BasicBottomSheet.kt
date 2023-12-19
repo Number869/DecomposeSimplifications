@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -17,7 +19,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Velocity
 import com.arkivanov.essenty.backhandler.BackCallback
-import com.number869.decomposeSimplifications.core.common.LocalDecomposeComponentContext
+import com.number869.decomposeSimplifications.core.common.ultils.LocalDecomposeComponentContext
 import kotlinx.coroutines.launch
 
 @Composable
@@ -40,44 +42,47 @@ fun BasicBottomSheet(
 
         var currentOffset by remember { mutableStateOf(screenSize.height) }
 
-        LaunchedEffect(null) {
-            animate(currentOffset, initialOffset) { value, _ -> currentOffset = value }
-        }
-
         var dismissalWasRequested by remember { mutableStateOf(false) }
 
-        fun closeThis() {
+        fun animateSheetOffset(targetOffset: Float, velocity: Float? = null, onEnd: () -> Unit = {}) {
             coroutineScope.launch {
-                animate(
-                    initialValue = currentOffset,
-                    targetValue = screenSize.height,
-                ) { value, _ ->
+                animate(currentOffset, targetOffset, velocity ?: 0f) { value, _ ->
                     currentOffset = value
 
-                    // check each value because the bottom sheet can be caught while
-                    // this is being executed. putting onDismiss() after animate() would result
-                    // in the sheet closing anyway if the user caught it
-                    if (value >= screenSize.height && !dismissalWasRequested) {
-                        onDismiss()
-                        dismissalWasRequested = true
-                    }
+                    if (value >= screenSize.height) onEnd()
                 }
             }
         }
 
-        LocalDecomposeComponentContext.current.backHandler.register(
-            BackCallback { coroutineScope.launch { closeThis() } }
+        fun close() = animateSheetOffset(
+            screenSize.height,
+            onEnd = {
+                if (!dismissalWasRequested) {
+                    onDismiss()
+                    dismissalWasRequested = true
+                }
+            }
         )
 
-        val nestedScrollConnection = remember {
+        LaunchedEffect(null) { animateSheetOffset(initialOffset) }
+
+        LocalDecomposeComponentContext.current.backHandler.register(
+            BackCallback() { close() }
+        )
+
+        // i little idea about how this works
+        val sheetScrollConnection = remember {
             object : NestedScrollConnection {
-                override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset = when {
-                    available.y >= 0 || currentOffset <= 0f -> Offset.Zero
+                override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                    return when {
+                        currentOffset <= minOffset -> Offset.Zero
 
-                    else -> {
-                        currentOffset += available.y
+                        else -> {
+                            // update offset making sure the sheet doesn't go under the status bar
+                            currentOffset = (currentOffset + available.y).coerceAtLeast(minOffset)
 
-                        available
+                            available
+                        }
                     }
                 }
 
@@ -85,39 +90,44 @@ fun BasicBottomSheet(
                     consumed: Offset,
                     available: Offset,
                     source: NestedScrollSource,
-                ): Offset = when {
-                    available.y <= 0 || currentOffset.coerceAtMost(maxOffset) == 0f -> Offset.Zero
+                ): Offset {
+                    val verticalSpeed = available.y
 
-                    else -> {
-                        currentOffset += available.y
+                    currentOffset += verticalSpeed
 
-                        available
+                    // if sheet is expanded and displayed under the status bar -
+                    // animate back to minimum offset when gesture ends
+                    return if (source == NestedScrollSource.Fling && currentOffset <= 0f) {
+                        animateSheetOffset(minOffset, available.y)
+
+                        // stop nested scroll connection from telling the ui to scroll
+                        // to correctly animate the sheet offset
+                        Offset.Zero
+                    } else {
+                        // this "if" fixes overscroll effect when the sheet is under the status bar
+                        if (currentOffset >= 0f) available else Offset.Zero
                     }
                 }
 
                 override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+                    val verticalSpeed = available.y
+
                     coroutineScope.launch {
-                        val isFullScreen = currentOffset == minOffset
-                        val speedThreshold = if (isFullScreen) 1500f else 15f
+                        val speedThreshold = if (currentOffset == minOffset) 1500f else 15f
+
+                        val gestureDownwardsWasFast = verticalSpeed > speedThreshold
+                        val isInTheLowerHalfOfTheScreen = currentOffset > screenSize.height / 2
 
                         when {
-                            available.y > speedThreshold || currentOffset > screenSize.height / 2 -> {
-                                closeThis()
-                            }
+                            gestureDownwardsWasFast || isInTheLowerHalfOfTheScreen -> close()
 
                             else -> {
-                                val targetOffset = if (available.y < -20f || currentOffset < initialOffset)
-                                    minOffset
+                                val targetOffset = if (verticalSpeed < -20f || currentOffset < initialOffset)
+                                    minOffset // expand
                                 else
-                                    initialOffset
+                                    initialOffset // collapse, but not entirely
 
-                                animate(
-                                    initialValue = currentOffset,
-                                    targetValue = targetOffset,
-                                    initialVelocity = available.y
-                                ) { value, _ ->
-                                    currentOffset = value
-                                }
+                                animateSheetOffset(targetOffset, verticalSpeed)
                             }
                         }
                     }
@@ -127,23 +137,25 @@ fun BasicBottomSheet(
             }
         }
 
+        // clickable scrim
         Box(
             Modifier
                 .clickable(
                     indication = null,
                     interactionSource = remember { MutableInteractionSource() },
-                    onClick = ::closeThis
+                    onClick = ::close
                 )
                 .graphicsLayer { alpha = 0.48f * (1f - (currentOffset / maxOffset)).coerceIn(0f, 1f) }
                 .fillMaxSize()
                 .background(Color.Black)
         )
 
-        Box(
+        Box (
             modifier
-                .nestedScroll(nestedScrollConnection)
                 .graphicsLayer { translationY = currentOffset.coerceAtLeast(0f) }
-                .heightIn(maxHeight)
+                .nestedScroll(sheetScrollConnection)
+                .verticalScroll(rememberScrollState())
+                .heightIn(max = maxHeight)
                 .fillMaxWidth()
         ) {
             content()

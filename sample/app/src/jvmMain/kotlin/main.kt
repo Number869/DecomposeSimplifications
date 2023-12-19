@@ -3,14 +3,21 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.number869.decomposeSimplifications.App
-import com.number869.decomposeSimplifications.core.common.decomposeNavControllerFlex
+import com.number869.decomposeSimplifications.core.common.navigation.alt.decomposeAltNavController
+import com.number869.decomposeSimplifications.ui.navigation.Destinations
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import java.awt.Dimension
 
 fun main() = application {
     startKoin {
-        modules(module { single { decomposeNavControllerFlex() } })
+        modules(
+            module {
+                single {
+                    decomposeAltNavController(Destinations.Empty, Destinations.serializer())
+                }
+            }
+        )
     }
 
     Window(

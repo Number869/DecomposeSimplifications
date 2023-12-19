@@ -1,5 +1,6 @@
 package com.number869.decomposeSimplifications
 
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -7,12 +8,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.ExperimentalDecomposeApi
-import com.number869.decomposeSimplifications.core.common.DecomposeNavControllerFlex
-import com.number869.decomposeSimplifications.core.common.DecomposeNavHostFlex
-import com.number869.decomposeSimplifications.core.common.StartingDestination
-import com.number869.decomposeSimplifications.ui.navigation.Screens
+import com.arkivanov.decompose.extensions.compose.stack.animation.fade
+import com.arkivanov.decompose.extensions.compose.stack.animation.slide
+import com.number869.decomposeSimplifications.common.BasicBottomSheet
+import com.number869.decomposeSimplifications.core.common.navigation.alt.DecomposeAltNavController
+import com.number869.decomposeSimplifications.core.common.navigation.alt.DecomposeAltNavHost
+import com.number869.decomposeSimplifications.ui.navigation.Destinations
 import com.number869.decomposeSimplifications.ui.screens.category1Default.Category1DefaultScreen
+import com.number869.decomposeSimplifications.ui.screens.category1Default.HiAlertDialog
+import com.number869.decomposeSimplifications.ui.screens.category1Option1.Category1Option1Screen
+import com.number869.decomposeSimplifications.ui.screens.category1Option1.MeowBottomsheetContent
+import com.number869.decomposeSimplifications.ui.screens.category1Option1.MeowDialog
 import com.number869.decomposeSimplifications.ui.screens.category2default.Category2DefaultScreen
+import com.number869.decomposeSimplifications.ui.screens.category2option1.Category2Option1Screen
 import com.number869.decomposeSimplifications.ui.theme.SampleTheme
 import org.koin.compose.getKoin
 
@@ -20,40 +28,70 @@ import org.koin.compose.getKoin
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalDecomposeApi::class)
 @Composable
 fun App() {
-    val navController = getKoin().get<DecomposeNavControllerFlex>()
+    val navController = getKoin().get<DecomposeAltNavController<Destinations>>()
 
     SampleTheme {
-        DecomposeNavHostFlex(
-            navController,
-            startingPoint = StartingDestination(Screens.Category1.Default.destinationName) {
-                Category1DefaultScreen(navController)
-            }
-        ) { nonOverlayContent ->
-            Scaffold(
-                topBar = { CenterAlignedTopAppBar(title = { Text("Decompose Simplifications") }) },
-                bottomBar = { SampleNavBar(navController) }
-            ) { scaffoldPadding ->
-                nonOverlayContent(modifier = Modifier.padding(scaffoldPadding))
+        Surface {
+            DecomposeAltNavHost(
+                navController,
+                startingDestination = Destinations.Category1.Default,
+                screenContainer = { containerContent ->
+                    Scaffold(bottomBar = { SampleNavBar(navController) }) { scaffoldPadding ->
+                        containerContent(Modifier.padding(scaffoldPadding))
+                    }
+                }
+            ) {
+                screen<Destinations.Category1.Default> {
+                    Category1DefaultScreen(navController)
+                }
+                screen<Destinations.Category1.Option1> {
+                    Category1Option1Screen(it.id, navController)
+                }
+
+                screen<Destinations.Category2.Default>(animation = fade(tween(200))) {
+                    Category2DefaultScreen(navController)
+                }
+                screen<Destinations.Category2.Option1> {
+                    Category2Option1Screen(it.id, navController)
+                }
+
+                overlay<Destinations.Category1.Option1> {
+                    Category1Option1Screen(it.id, navController)
+                }
+
+                overlay<Destinations.Category2.Default>(animation = slide()) {
+                    Category2DefaultScreen(navController)
+                }
+
+                overlay<Destinations.Overlay.ExampleBottomSheet>(null) {
+                    BasicBottomSheet(onDismiss = navController::navigateBack) {
+                        MeowBottomsheetContent(navController)
+                    }
+                }
+
+                overlay<Destinations.Overlay.Category1Dialog>(null) { HiAlertDialog(navController) }
+
+                overlay<Destinations.Overlay.DialogFromBottomSheet>(null) { MeowDialog(navController) }
             }
         }
     }
 }
 
 @Composable
-fun SampleNavBar(navController: DecomposeNavControllerFlex) {
+fun SampleNavBar(navController: DecomposeAltNavController<Destinations>) {
     val currentScreen = navController.currentScreenDestination
 
     NavigationBar {
         NavigationBarItem(
-            selected = currentScreen.startsWith(Screens.Category1.categoryName),
+            selected = currentScreen is Destinations.Category1,
             icon = { Icon(Icons.Default.Home, contentDescription = null)},
-            onClick = { navController.openAsScreen("Category1Default") { Category1DefaultScreen(navController) } }
+            onClick = { navController.navigateToScreen(Destinations.Category1.Default)}
         )
 
         NavigationBarItem(
-            selected = currentScreen.startsWith(Screens.Category2.categoryName),
+            selected = currentScreen is Destinations.Category2,
             icon = { Icon(Icons.Default.Home, contentDescription = null)},
-            onClick = { navController.openAsScreen("Category2Default") { Category2DefaultScreen(navController) } }
+            onClick = { navController.navigateToScreen(Destinations.Category2.Default) }
         )
     }
 }

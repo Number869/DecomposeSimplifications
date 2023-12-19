@@ -1,4 +1,4 @@
-package com.number869.decomposeSimplifications.core.common
+package com.number869.decomposeSimplifications.core.common.navigation.flex
 
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
@@ -19,6 +19,8 @@ import com.arkivanov.essenty.instancekeeper.InstanceKeeper
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.statekeeper.StateKeeperDispatcher
+import com.number869.decomposeSimplifications.core.common.ultils.noRippleClickable
+import com.number869.decomposeSimplifications.core.common.ultils.tryRestoreStateFromFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
@@ -146,7 +148,12 @@ class DecomposeNavControllerFlex(
     ) {
         // remember data about content
         animation?.let { animationsForDestinations[key] = it }
-        contentOfOverlays[key] = { Box(content = content, modifier = Modifier.fillMaxSize()) }
+        contentOfOverlays[key] = {
+            Box(
+                modifier = Modifier.fillMaxSize().noRippleClickable(),
+                content = content
+            )
+        }
 
         // navigate
         overlayNavigation.push(key)

@@ -1,4 +1,4 @@
-package com.number869.decomposeSimplifications.core.common
+package com.number869.decomposeSimplifications.core.common.navigation.standard
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.stack.animation.*
+import com.number869.decomposeSimplifications.core.common.ultils.LocalDecomposeComponentContext
 
 /**
  * Basic nav host. Provides the child's [ComponentContext] using [CompositionLocalProvider],

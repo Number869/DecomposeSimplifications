@@ -1,6 +1,5 @@
 package com.number869.decomposeSimplifications.ui.screens.category1Option1
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,21 +7,31 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.number869.decomposeSimplifications.common.BasicBottomSheet
-import com.number869.decomposeSimplifications.core.common.DecomposeNavControllerFlex
-import com.number869.decomposeSimplifications.core.common.decomposeViewModel
-import com.number869.decomposeSimplifications.ui.navigation.Screens
-import com.number869.decomposeSimplifications.ui.screens.category2default.Category2DefaultScreen
+import com.number869.decomposeSimplifications.core.common.navigation.alt.ContentTypes
+import com.number869.decomposeSimplifications.core.common.navigation.alt.DecomposeAltNavController
+import com.number869.decomposeSimplifications.core.common.navigation.alt.LocalContentType
+import com.number869.decomposeSimplifications.core.common.ultils.decomposeViewModel
+import com.number869.decomposeSimplifications.ui.navigation.Destinations
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun Category1Option1Screen(id: String, navController: DecomposeNavControllerFlex) {
+fun Category1Option1Screen(
+    id: String,
+    navController: DecomposeAltNavController<Destinations>,
+) {
+    val isOverlay = LocalContentType.current == ContentTypes.Overlay
     val vm = decomposeViewModel(Category1Option1ViewModel())
+
+    LaunchedEffect(null) {
+        if (isOverlay) {
+            navController.openInSnack { ToastMessageUi() }
+        }
+    }
+
     Column(
         Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface),
         verticalArrangement = Arrangement.Center
@@ -30,35 +39,31 @@ fun Category1Option1Screen(id: String, navController: DecomposeNavControllerFlex
         Text("Category 1 Option 1 $id")
         Text("random uuid from vm that destroys itself after exit ${vm.randomUuid}")
         FilledTonalButton(
-            onClick = {
-                navController.openAsScreen(Screens.Category2.Default.destinationName) {
-                    Category2DefaultScreen(navController)
-                }
-            }
+            onClick = { navController.navigateToScreen(Destinations.Category2.Default) }
         ) {
             Text("Open category 2")
         }
 
         FilledTonalButton(
             onClick = {
-                val meowDestinationKey = "meoooow"
-
-                // bottom sheets don't need fade animation (that's set by default)
-                navController.openInOverlay(key = meowDestinationKey, animation = null) {
-                    BasicBottomSheet(
-                        onDismiss = { navController.closeOverlay(meowDestinationKey) }
-                    ) { MeowBottomsheetContent(navController) }
-                }
+                navController.navigateToOverlay(Destinations.Overlay.ExampleBottomSheet)
             }
         ) {
             Text("Open bottom sheet")
         }
+
+        FilledTonalButton(
+            onClick = {
+                navController.navigateToOverlay(Destinations.Category2.Default)
+            }
+        ) {
+            Text("Open category 2 as overlay")
+        }
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MeowBottomsheetContent(navController: DecomposeNavControllerFlex) {
+fun MeowBottomsheetContent(navController: DecomposeAltNavController<Destinations>) {
     Column(
         Modifier
             .clip(RoundedCornerShape(28.dp, 28.dp, 0.dp, 0.dp))
@@ -82,20 +87,18 @@ fun MeowBottomsheetContent(navController: DecomposeNavControllerFlex) {
                             Text(
                                 "BasicBottomSheet example",
                                 style = MaterialTheme.typography.headlineSmall,
-                                color = MaterialTheme.colorScheme.onSurface
                             )
 
                             Text(
                                 "from optional-extensions artifact",
                                 style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.onSurface
                             )
 
                             Spacer(Modifier.height(32.dp))
 
                             Button(
                                 onClick = {
-                                    navController.openInOverlay("meow dialog") { MeowDialog(navController) }
+                                    navController.navigateToOverlay(Destinations.Overlay.DialogFromBottomSheet)
                                 }
                             ) {
                                 Text("Open a dialog")
@@ -127,14 +130,33 @@ fun MeowBottomsheetContent(navController: DecomposeNavControllerFlex) {
 }
 
 @Composable
-fun MeowDialog(navController: DecomposeNavControllerFlex) {
+fun MeowDialog(navController: DecomposeAltNavController<Destinations>) {
     AlertDialog(
         onDismissRequest = navController::navigateBack,
         text = { Text("another dialooooog :3333") },
         confirmButton = {
-            Button(onClick = navController::navigateBack) {
+            Button(onClick = { navController.closeOverlay(Destinations.Overlay.DialogFromBottomSheet) }) {
                 Text("Close")
             }
         }
     )
+}
+
+@Composable
+fun BoxScope.ToastMessageUi() {
+    Box(
+        Modifier
+            .align(Alignment.BottomCenter)
+            .padding(64.dp)
+            .clip(CircleShape)
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.primaryContainer),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            "This was opened in an overlay",
+            Modifier.padding(vertical = 16.dp),
+            style = MaterialTheme.typography.titleSmall
+        )
+    }
 }
