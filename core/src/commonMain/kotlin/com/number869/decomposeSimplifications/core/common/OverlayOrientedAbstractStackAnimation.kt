@@ -1,4 +1,4 @@
-package com.number869.decomposeSimplifications.core.common
+package com.number869.decomposeSimplifications.core.common.ultils.animation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
@@ -7,13 +7,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import com.arkivanov.decompose.Child
 import com.arkivanov.decompose.extensions.compose.stack.animation.Direction
 import com.arkivanov.decompose.extensions.compose.stack.animation.StackAnimation
+import com.arkivanov.decompose.extensions.compose.stack.animation.isExit
 import com.arkivanov.decompose.router.stack.ChildStack
 
+
+// TODO: fix predictive back somehow
 internal abstract class OverlayOrientedAbstractStackAnimation<C : Any, T : Any>(
     private val disableInputDuringAnimation: Boolean,
 ) : StackAnimation<C, T> {
-    private val items = linkedMapOf<C, AnimationItem<C, T>>()
-
     @Composable
     protected abstract fun Child(
         item: AnimationItem<C, T>,
@@ -24,11 +25,12 @@ internal abstract class OverlayOrientedAbstractStackAnimation<C : Any, T : Any>(
     @Composable
     override operator fun invoke(stack: ChildStack<C, T>, modifier: Modifier, content: @Composable (child: Child.Created<C, T>) -> Unit) {
         var currentStack by remember { mutableStateOf(stack) }
+        var items by remember { mutableStateOf(getAnimationItems(newStack = currentStack, oldStack = null)) }
 
         if (stack.active.configuration != currentStack.active.configuration) {
             val oldStack = currentStack
             currentStack = stack
-            getAndSetAnimationItems(newStack = currentStack, oldStack = oldStack)
+            items = getAnimationItems(newStack = currentStack, oldStack = oldStack)
         }
 
         Box(modifier = modifier) {
@@ -37,8 +39,10 @@ internal abstract class OverlayOrientedAbstractStackAnimation<C : Any, T : Any>(
                     Child(
                         item = item,
                         onFinished = {
-                            if (!currentStack.items.contains(item.child.configuration)) {
-                                items.remove(item.child.configuration)
+                            if (item.direction.isExit) {
+                                items -= configuration
+                            } else {
+                                items += (configuration to item)
                             }
                         },
                         content = content,
@@ -68,41 +72,24 @@ internal abstract class OverlayOrientedAbstractStackAnimation<C : Any, T : Any>(
         )
     }
 
-    private fun getAndSetAnimationItems(newStack: ChildStack<C, T>, oldStack: ChildStack<C, T>?): Map<C, AnimationItem<C, T>> {
-        when {
-            oldStack == null -> {
-                items[newStack.active.configuration] = AnimationItem(
-                    child = newStack.active,
-                    direction = Direction.ENTER_FRONT,
-                    isInitial = true
-                )
-            }
+    private fun getAnimationItems(newStack: ChildStack<C, T>, oldStack: ChildStack<C, T>?): Map<C, AnimationItem<C, T>> {
+        val animationItems = mutableListOf<AnimationItem<C, T>>()
 
-            (newStack.size < oldStack.size) && (newStack.active.configuration in oldStack.backStack) -> {
-                items[oldStack.active.configuration] = AnimationItem(
-                    child = oldStack.active,
-                    direction = Direction.EXIT_FRONT,
-                    otherChild = newStack.active
-                )
-            }
+        // Add all items from the new stack as entering items.
+        newStack.items.forEach { child ->
+            animationItems.add(AnimationItem(child = child, direction = Direction.ENTER_FRONT))
+        }
 
-            else -> {
-                items[oldStack.active.configuration] = AnimationItem(
-                    child = oldStack.active,
-                    direction = Direction.ENTER_FRONT,
-                    otherChild = newStack.active
-                )
-
-                items[newStack.active.configuration] = AnimationItem(
-                    child = newStack.active,
-                    direction = Direction.ENTER_FRONT,
-                    otherChild = oldStack.active
-                )
+        // If there's an old stack, add all its items as exiting items.
+        oldStack?.items?.forEach { child ->
+            if (child !in newStack.items) {
+                animationItems.add(AnimationItem(child = child, direction = Direction.EXIT_BACK))
             }
         }
 
-        return items
+        return animationItems.associateBy { it.child.configuration }
     }
+
 
     private val ChildStack<*, *>.size: Int
         get() = items.size
@@ -110,7 +97,7 @@ internal abstract class OverlayOrientedAbstractStackAnimation<C : Any, T : Any>(
     private operator fun <C : Any> Iterable<Child<C, *>>.contains(config: C): Boolean =
         any { it.configuration == config }
 
-    data class AnimationItem<out C : Any, out T : Any>(
+    protected data class AnimationItem<out C : Any, out T : Any>(
         val child: Child.Created<C, T>,
         val direction: Direction,
         val isInitial: Boolean = false,

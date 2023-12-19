@@ -19,7 +19,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Velocity
 import com.arkivanov.essenty.backhandler.BackCallback
-import com.number869.decomposeSimplifications.core.common.LocalDecomposeComponentContext
+import com.number869.decomposeSimplifications.core.common.ultils.LocalDecomposeComponentContext
 import kotlinx.coroutines.launch
 
 @Composable

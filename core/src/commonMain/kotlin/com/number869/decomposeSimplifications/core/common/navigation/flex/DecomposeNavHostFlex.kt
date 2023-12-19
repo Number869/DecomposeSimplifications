@@ -1,4 +1,4 @@
-package com.number869.decomposeSimplifications.core.common
+package com.number869.decomposeSimplifications.core.common.navigation.flex
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
@@ -10,6 +10,8 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.stack.animation.StackAnimation
 import com.arkivanov.decompose.extensions.compose.stack.animation.predictiveback.predictiveBackAnimation
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
+import com.number869.decomposeSimplifications.core.common.ultils.LocalDecomposeComponentContext
+import com.number869.decomposeSimplifications.core.common.ultils.animation.OverlayStackNavigationAnimation
 
 @ExperimentalDecomposeApi
 @Composable

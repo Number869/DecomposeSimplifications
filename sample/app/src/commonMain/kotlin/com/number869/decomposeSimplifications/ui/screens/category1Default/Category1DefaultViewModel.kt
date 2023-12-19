@@ -1,6 +1,6 @@
 package com.number869.decomposeSimplifications.ui.screens.category1Default
 
-import com.number869.decomposeSimplifications.core.common.DecomposeViewModel
+import com.number869.decomposeSimplifications.core.common.ultils.DecomposeViewModel
 import kotlinx.coroutines.launch
 import java.util.*
 

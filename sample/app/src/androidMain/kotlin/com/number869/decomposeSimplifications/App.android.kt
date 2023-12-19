@@ -6,7 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.defaultComponentContext
-import com.number869.decomposeSimplifications.core.common.decomposeNavControllerFlex
+import com.number869.decomposeSimplifications.core.common.navigation.alt.decomposeAltNavController
+import com.number869.decomposeSimplifications.ui.navigation.Destinations
 import org.koin.core.context.GlobalContext
 import org.koin.dsl.module
 
@@ -17,7 +18,13 @@ class AppActivity : ComponentActivity() {
 
         GlobalContext.loadKoinModules(
             module {
-                single { decomposeNavControllerFlex(defaultComponentContext()) }
+                single {
+                    decomposeAltNavController(
+                        Destinations.Empty,
+                        Destinations.serializer(),
+                        defaultComponentContext()
+                    )
+                }
             }
         )
 

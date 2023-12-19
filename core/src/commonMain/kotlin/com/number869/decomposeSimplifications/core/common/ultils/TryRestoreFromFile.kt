@@ -1,4 +1,4 @@
-package com.number869.decomposeSimplifications.core.common
+package com.number869.decomposeSimplifications.core.common.ultils
 
 import com.arkivanov.essenty.statekeeper.SerializableContainer
 import java.io.File

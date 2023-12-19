@@ -1,4 +1,4 @@
-package com.number869.decomposeSimplifications.core.common
+package com.number869.decomposeSimplifications.core.common.ultils.animation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable

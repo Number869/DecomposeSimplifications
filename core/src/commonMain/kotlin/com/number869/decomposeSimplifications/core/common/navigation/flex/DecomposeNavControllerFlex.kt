@@ -1,8 +1,6 @@
-package com.number869.decomposeSimplifications.core.common
+package com.number869.decomposeSimplifications.core.common.navigation.flex
 
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +19,8 @@ import com.arkivanov.essenty.instancekeeper.InstanceKeeper
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.statekeeper.StateKeeperDispatcher
+import com.number869.decomposeSimplifications.core.common.ultils.noRippleClickable
+import com.number869.decomposeSimplifications.core.common.ultils.tryRestoreStateFromFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
@@ -150,7 +150,7 @@ class DecomposeNavControllerFlex(
         animation?.let { animationsForDestinations[key] = it }
         contentOfOverlays[key] = {
             Box(
-                modifier = Modifier.fillMaxSize().disallowClicksUnderThis(),
+                modifier = Modifier.fillMaxSize().noRippleClickable(),
                 content = content
             )
         }
@@ -246,9 +246,3 @@ private data class ScreensInstanceHolder<T>(val data: T) : InstanceKeeper.Instan
 private data class OverlaysInstanceHolder<T>(val data: T) : InstanceKeeper.Instance
 private data class SnacksInstanceHolder<T>(val data: T) : InstanceKeeper.Instance
 private data class AnimationsInstanceHolder<T>(val data: T) : InstanceKeeper.Instance
-
-private fun Modifier.disallowClicksUnderThis() = this.clickable(
-    indication = null,
-    interactionSource = MutableInteractionSource(),
-    onClick = { }
-)

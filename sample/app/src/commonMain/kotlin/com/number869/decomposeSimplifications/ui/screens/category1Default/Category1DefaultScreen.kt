@@ -8,14 +8,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.number869.decomposeSimplifications.core.common.DecomposeNavControllerFlex
-import com.number869.decomposeSimplifications.core.common.decomposeViewModel
-import com.number869.decomposeSimplifications.ui.navigation.Screens
-import com.number869.decomposeSimplifications.ui.screens.category1Option1.Category1Option1Screen
+import com.number869.decomposeSimplifications.core.common.navigation.alt.DecomposeAltNavController
+import com.number869.decomposeSimplifications.core.common.ultils.decomposeViewModel
+import com.number869.decomposeSimplifications.ui.navigation.Destinations
 import java.util.*
 
 @Composable
-fun Category1DefaultScreen(navController: DecomposeNavControllerFlex, ) {
+fun Category1DefaultScreen(navController: DecomposeAltNavController<Destinations>, ) {
     val vm = decomposeViewModel(Category1DefaultViewModel())
     Box(
         Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface),
@@ -28,9 +27,8 @@ fun Category1DefaultScreen(navController: DecomposeNavControllerFlex, ) {
             Button(
                 onClick = {
                     val randomId = UUID.randomUUID().toString()
-                    navController.openInOverlay(
-                        "${Screens.Category1.Option1}$randomId"
-                    ) { Category1Option1Screen(randomId, navController, isOverlay = true) }
+
+                    navController.navigateToOverlay(Destinations.Category1.Option1(randomId))
                 }
             ) {
                 Text("Navigate to Option 1")
@@ -38,9 +36,7 @@ fun Category1DefaultScreen(navController: DecomposeNavControllerFlex, ) {
 
             Button(
                 onClick = {
-                    navController.openInOverlay("alert dialog hi") {
-                        HiAlertDialog(navController)
-                    }
+                    navController.navigateToOverlay(Destinations.Overlay.Category1Dialog)
                 }
             ) {
                 Text("Open a dialog")
@@ -50,15 +46,13 @@ fun Category1DefaultScreen(navController: DecomposeNavControllerFlex, ) {
 }
 
 @Composable
-fun HiAlertDialog(navController: DecomposeNavControllerFlex) = AlertDialog(
+fun HiAlertDialog(navController: DecomposeAltNavController<Destinations>) = AlertDialog(
     onDismissRequest = navController::navigateBack,
     text = { Text("hiiiiiii") },
     confirmButton = {
         FilledTonalButton(
             onClick = {
-                navController.openAsScreen(Screens.Category1.Option1.destinationName) {
-                    Category1Option1Screen("from dialog :3", navController)
-                }
+                navController.navigateToScreen(Destinations.Category1.Option1("from dialog :3"))
             }
         ) {
             Text("Open option 1 screen")
